@@ -1,0 +1,15 @@
+# Render blueprint — one-click hosting of the live, presenter-synced Slidev server.
+# Render → New + → Blueprint → pick this repo. It builds the Dockerfile and prompts
+# for the two env vars below (sync: false = you enter them in the dashboard).
+services:
+  - type: web
+    name: graphql-slides
+    runtime: docker
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        sync: false
