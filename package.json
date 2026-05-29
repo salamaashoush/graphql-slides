@@ -1,0 +1,17 @@
+{
+  "name": "graphql-slides",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "slidev --open",
+    "build": "slidev build",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^51.0.0",
+    "@slidev/theme-default": "^0.25.0",
+    "@slidev/theme-seriph": "^0.25.0",
+    "@supabase/supabase-js": "^2.106.2",
+    "vue": "^3.5.13"
+  }
+}

@@ -1,0 +1,156 @@
+/* Slidev 51.x dev-UI quirk: the closed "go to slide" dialog is parked off-screen
+   but its autocomplete dropdown renders the full slide list and spills into view.
+   Only reveal it while the dialog is actually focused (press `g`). */
+#slidev-goto-dialog:not(:focus-within) .autocomplete-list {
+  display: none;
+}
+
+:root {
+  --tn-bg: #1a1b26;
+  --tn-bg2: #24283b;
+  --tn-bg3: #2f344d;
+  --tn-fg: #c0caf5;
+  --tn-blue: #7aa2f7;
+  --tn-cyan: #7dcfff;
+  --tn-green: #9ece6a;
+  --tn-orange: #ff9e64;
+  --tn-red: #f7768e;
+  --tn-purple: #bb9af7;
+  --tn-yellow: #e0af68;
+  --tn-comment: #565f89;
+}
+
+.slidev-layout {
+  background: var(--tn-bg);
+  color: var(--tn-fg);
+}
+
+.slidev-layout h1 {
+  color: var(--tn-blue);
+  font-weight: 700;
+}
+.slidev-layout h2 {
+  color: var(--tn-cyan);
+  font-weight: 650;
+}
+.slidev-layout h3 { color: var(--tn-purple); }
+
+.slidev-layout strong { color: var(--tn-orange); font-weight: 650; }
+.slidev-layout a { color: var(--tn-cyan); }
+
+.slidev-layout code:not(pre code) {
+  background: var(--tn-bg2);
+  color: var(--tn-purple);
+  padding: 0.08rem 0.34rem;
+  border-radius: 0.3rem;
+  font-size: 0.88em;
+}
+
+.slidev-layout blockquote {
+  border-left: 3px solid var(--tn-purple);
+  background: rgba(187, 154, 247, 0.08);
+  color: var(--tn-fg);
+}
+
+/* code block frame */
+.slidev-layout pre {
+  border: 1px solid var(--tn-bg3);
+  border-radius: 0.6rem !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* tighter, denser bullets for content-heavy slides */
+.slidev-layout li { margin: 0.18rem 0; }
+
+/* utility classes used across slides */
+.muted { color: var(--tn-comment); }
+.tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  background: var(--tn-bg2);
+  color: var(--tn-cyan);
+  border: 1px solid var(--tn-bg3);
+}
+.tag-box { color: var(--tn-orange); border-color: var(--tn-orange); }
+.tag-gen { color: var(--tn-green); border-color: var(--tn-green); }
+
+.card {
+  background: rgba(36, 40, 59, 0.6);
+  border: 1px solid var(--tn-bg3);
+  border-radius: 0.6rem;
+  padding: 0.8rem 1rem;
+}
+
+.col-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.good { color: var(--tn-green); }
+.bad { color: var(--tn-red); }
+
+/* source caption above a code block */
+.src {
+  font-size: 0.68rem;
+  color: var(--tn-comment);
+  font-family: ui-monospace, monospace;
+  margin-bottom: -0.4rem;
+}
+
+/* keep mermaid diagrams inside the slide — scale the SVG down to fit width */
+.slidev-layout .mermaid {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow: visible;
+}
+.slidev-layout .mermaid svg {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* "It is NOT / It IS" mental-model rows — no list markers, aligned icons */
+.mm-head {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--tn-cyan);
+  margin-bottom: 0.35rem;
+}
+.mm-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  margin: 0.3rem 0;
+  line-height: 1.35;
+}
+.mm-ic {
+  flex: none;
+  width: 1.1rem;
+  text-align: center;
+  font-weight: 800;
+}
+
+/* quiz-slide heading: small tag centered with the title */
+.q-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-bottom: 0.4rem;
+}
+.q-title-text {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--tn-blue);
+}
+.tag-live {
+  font-size: 0.6rem;
+  padding: 0.28rem 0.65rem;
+  align-self: center;
+}
