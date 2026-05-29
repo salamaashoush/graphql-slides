@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "slidev --open",
+    "present": "slidev --port 3030 --remote",
     "build": "slidev build",
     "export": "slidev export"
   },

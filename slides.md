@@ -1113,7 +1113,104 @@ layout: section
 ---
 
 # The client
-<div class="muted">the normalized cache, fetch policies, fragments, the unreleased-field trap</div>
+<div class="muted">setup · codegen · the normalized cache · fetch policies · fragments · optimistic UI</div>
+
+---
+
+# Setting up a client
+
+<div class="col-2">
+<div>
+
+A GraphQL client is just **a transport link + a cache**, wrapped in a provider. The big three:
+
+- **Apollo Client** — batteries-included, the default
+- **urql** — lighter, modular
+- **Relay** — strict, compiler-driven, Facebook-scale
+
+</div>
+<div>
+
+```ts {all|2|3|6}
+const client = new ApolloClient({
+  link: new HttpLink({ uri: '/graphql' }),  // transport
+  cache: new InMemoryCache(),               // normalized store
+})
+
+// one provider, then useQuery/useMutation anywhere
+<ApolloProvider client={client}>
+  <App />
+</ApolloProvider>
+```
+
+</div>
+</div>
+
+<div class="muted text-sm">The <strong>link</strong> is composable middleware — chain auth headers, retries, and error logging <em>before</em> the terminating HTTP link.</div>
+
+---
+
+# Client codegen: typed operations
+
+<div class="col-2">
+<div>
+
+Hand-written `Data`/`Variables` types **drift** from the schema. Codegen reads the schema (via introspection) and makes every operation **type-safe end to end** — variables, results, and fragment composition.
+
+Three ecosystems:
+- **graphql-codegen** (client preset) — typed `graphql()`
+- **gql.tada** — types in the TS type-system, no generated file to import
+- **Relay** — compiler + artifacts
+
+</div>
+<div>
+
+```ts {all|1|2-3|5}
+const GET_USER = graphql(`
+  query GetUser($id: ID!) {
+    user(id: $id) { id name email }
+  }
+`)
+type Data = ResultOf<typeof GET_USER>      // { user: { id; name; email } | null }
+type Vars = VariablesOf<typeof GET_USER>   // { id: string }
+
+useQuery(GET_USER, { variables: { id } }) // fully typed — no casts, no any
+```
+
+</div>
+</div>
+
+<div class="muted text-sm">Autocomplete on fields, a red squiggle the moment you request a field that doesn't exist. The schema is the source of truth.</div>
+
+---
+
+# The codegen workflow
+
+```mermaid {theme:'dark', scale:0.66}
+flowchart LR
+  SC["schema<br/>(introspection URL<br/>or schema.graphql)"] --> CG["codegen<br/>/ ts-plugin"]
+  OP["your graphql()<br/>operations"] --> CG
+  CG --> T["generated types"]
+  T --> H["typed useQuery /<br/>useMutation"]
+```
+
+<div class="col-2" style="margin-top:0.5rem">
+<div class="card">
+
+1. point codegen at the **schema**
+2. write operations with `graphql()`
+3. run codegen → **generated types**
+4. hooks infer types automatically
+
+</div>
+<div class="card">
+
+**Regenerate whenever the schema changes** — a new field won't be typed until you do. A CI check can fail the build if an operation references a field the **published** schema doesn't have yet.
+
+</div>
+</div>
+
+<div class="muted text-sm" style="margin-top:0.4rem">This is exactly why the <strong>unreleased-field trap</strong> (a few slides on) bites — codegen only knows fields the published schema exposes.</div>
 
 ---
 
@@ -1282,6 +1379,73 @@ cache.gc()
 
 ---
 
+# Optimistic updates — instant UI
+
+<div class="col-2">
+<div>
+
+Don't wait for the round trip. Render the **expected** result immediately, reconcile (or roll back) when the server responds.
+
+```ts {all|3-6}
+useMutation(LIKE_POST, {
+  variables: { id },
+  optimisticResponse: {
+    likePost: {
+      __typename: 'Post', id, likes: likes + 1,
+    },
+  },
+})
+```
+
+</div>
+<div>
+
+<div class="card">
+
+1. client writes the optimistic result to the cache → **UI updates instantly**
+2. real response arrives → cache reconciles
+3. server errors → optimistic write is **automatically reverted**
+
+</div>
+
+<div class="muted text-sm" style="margin-top:0.6rem">The <code>__typename</code> + <code>id</code> must match so the cache updates the <em>same</em> normalized entity every view shares.</div>
+
+</div>
+</div>
+
+---
+
+# Loading, error & network states
+
+<div class="col-2">
+<div>
+
+`useQuery` returns more than `data`:
+
+```ts {all|1|3-4}
+const { data, loading, error,
+        networkStatus, refetch, fetchMore } = useQuery(FEED, {
+  errorPolicy: 'all',   // partial data + error, not all-or-nothing
+})
+
+if (loading) return <Spinner />
+if (error && !data) return <ErrorView e={error} />
+```
+
+</div>
+<div>
+
+- **`errorPolicy: 'all'`** — field errors don't blank the screen; you get partial `data` *and* `error`.
+- **`fetchMore`** — drives cursor pagination; merged by the cache field policy.
+- **Suspense** — `useSuspenseQuery` plugs into React `<Suspense>` for declarative loading.
+
+<div class="muted text-sm" style="margin-top:0.5rem">Remember: a GraphQL response can carry <strong>both</strong> <code>data</code> and <code>errors</code> — design the UI for partial success.</div>
+
+</div>
+</div>
+
+---
+
 # The unreleased-field trap
 
 <div class="col-2">
@@ -1415,11 +1579,11 @@ layout: section
 <div>
 
 ### Client
-- **normalized cache** keyed by `__typename + id`
-- explicit per-hook **`fetchPolicy`**
-- colocated **fragments** (+ masking) and generated typed operations
-- **mutations** auto-update the cache; `update`/`refetchQueries` for lists
-- send only **released** fields; the server validates the whole document
+- a client = **link + normalized cache** (keyed by `__typename + id`)
+- **codegen** → typed operations (`ResultOf`/`VariablesOf`); regenerate on schema change
+- explicit per-hook **`fetchPolicy`**; design for partial `data` + `errors`
+- colocated **fragments** (+ masking); **optimistic** updates for instant UI
+- **mutations** auto-update the cache; send only **released** fields
 
 </div>
 </div>
@@ -1465,7 +1629,7 @@ class: text-center
 
 # Bonus round
 
-<div class="muted">one more to tie it together</div>
+<div class="muted">a few more to tie it together — rack up points</div>
 
 <div style="max-width:50rem; margin:1.2rem auto; text-align:left">
 
@@ -1481,6 +1645,106 @@ class: text-center
   ]"
   :answer="1"
   explanation="Cost-based rate limiting prices expensive operations and rejects <em>pre-execution</em> with a real 429. Partial responses are a separate mechanism: a single rejected batch entry becomes a per-field error so the rest survives, and the status stays 200."
+/>
+
+</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">BONUS</span><span class="q-title-text">Codegen</span></div>
+
+<div style="max-width:50rem; margin:0.6rem auto; text-align:left">
+
+<Quiz
+  qid="q11-codegen"
+  :multiline="true"
+  question="With codegen (graphql-codegen / gql.tada), where do a query's Data and Variables types come from?"
+  :options="[
+    'You hand-write them next to each query and keep them in sync manually',
+    'They’re inferred from the typed document against the schema — e.g. ResultOf&lt;typeof DOC&gt; / VariablesOf&lt;typeof DOC&gt;',
+    'Apollo infers them at runtime from the first response',
+    'From the InMemoryCache typePolicies',
+  ]"
+  :answer="1"
+  explanation="Codegen reads the schema and types the operation, so result/variable types are <strong>derived from the document</strong> (<code>ResultOf</code>/<code>VariablesOf</code>). Re-run codegen when the schema changes; never hand-edit generated types."
+/>
+
+</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">BONUS</span><span class="q-title-text">The normalized cache</span></div>
+
+<div style="max-width:50rem; margin:0.6rem auto; text-align:left">
+
+<Quiz
+  qid="q12-normalized-cache"
+  :multiline="true"
+  question="A list view and a detail view both show the same updated value right after one of them mutates an entity — no refetch. Why?"
+  :options="[
+    'The client refetches every query on every mutation',
+    'The normalized cache stores each entity once keyed by __typename + id, and both views read that single entry',
+    'HTTP caching on the /graphql URL keeps them in sync',
+    'The server pushes a subscription to both views',
+  ]"
+  :answer="1"
+  explanation="The client normalizes the response graph into a flat store keyed by <code>__typename</code> + <code>id</code>. Both views reference the same entity, so updating it once updates everywhere — no refetch."
+/>
+
+</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">BONUS</span><span class="q-title-text">Optimistic UI</span></div>
+
+<div style="max-width:50rem; margin:0.6rem auto; text-align:left">
+
+<Quiz
+  qid="q13-optimistic"
+  :multiline="true"
+  question="What does an optimisticResponse on a mutation do?"
+  :options="[
+    'Skips the server call entirely',
+    'Writes the expected result to the cache immediately for instant UI, then reconciles — or auto-reverts if the server errors',
+    'Retries the mutation until it succeeds',
+    'Disables the normalized cache for that mutation',
+  ]"
+  :answer="1"
+  explanation="The optimistic result is written to the cache right away (instant UI), then replaced by the real server response — and rolled back automatically on error. Its <code>__typename</code>+<code>id</code> must match the real entity."
+/>
+
+</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">BONUS</span><span class="q-title-text">Fragments</span></div>
+
+<div style="max-width:50rem; margin:0.6rem auto; text-align:left">
+
+<Quiz
+  qid="q14-fragment-masking"
+  :multiline="true"
+  question="What problem does fragment masking (Relay / gql.tada) solve?"
+  :options="[
+    'It compresses the query string sent over the wire',
+    'A component can read only the fields it declared in its own fragment — not fields a sibling or parent happened to fetch',
+    'It lets you skip server-side validation',
+    'It merges paginated pages in the cache',
+  ]"
+  :answer="1"
+  explanation="Masking enforces encapsulation: each component sees only its own fragment's fields, so you can't accidentally depend on data another component fetched. You read a masked fragment via a helper (e.g. <code>useFragment</code> / <code>readFragment</code>)."
 />
 
 </div>

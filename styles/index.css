@@ -59,8 +59,38 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
-/* tighter, denser bullets for content-heavy slides */
-.slidev-layout li { margin: 0.18rem 0; }
+/* Markdown lists: replace the default square markers with clean custom bullets.
+   Scoped to unclassed ul/ol so component lists (Quiz, Leaderboard) are untouched. */
+.slidev-layout ul:not([class]) {
+  list-style: none;
+  padding-left: 1.15rem;
+}
+.slidev-layout ul:not([class]) > li {
+  position: relative;
+  margin: 0.32rem 0;
+  line-height: 1.4;
+}
+.slidev-layout ul:not([class]) > li::before {
+  content: "";
+  position: absolute;
+  left: -1.0rem;
+  top: 0.6em;
+  width: 0.36rem;
+  height: 0.36rem;
+  border-radius: 50%;
+  background: var(--tn-blue);
+  opacity: 0.85;
+}
+/* nested lists get a hollow, smaller marker */
+.slidev-layout ul:not([class]) ul:not([class]) > li::before {
+  background: transparent;
+  border: 1.5px solid var(--tn-comment);
+  width: 0.32rem;
+  height: 0.32rem;
+}
+/* ordered lists: keep numbers, just tint them */
+.slidev-layout ol:not([class]) > li { margin: 0.32rem 0; line-height: 1.4; }
+.slidev-layout ol:not([class]) > li::marker { color: var(--tn-blue); font-weight: 700; }
 
 /* utility classes used across slides */
 .muted { color: var(--tn-comment); }
