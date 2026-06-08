@@ -38,7 +38,7 @@ const medals = ['🥇', '🥈', '🥉']
       <div v-else class="lb-podium">
         <div
           v-for="(row, i) in podium"
-          :key="row.name"
+          :key="`${row.name}-${i}`"
           class="lb-top"
           :class="`lb-top-${i + 1}`"
         >
@@ -49,7 +49,7 @@ const medals = ['🥇', '🥈', '🥉']
       </div>
 
       <ul v-if="rest.length" class="lb-rest">
-        <li v-for="(row, i) in rest" :key="row.name">
+        <li v-for="(row, i) in rest" :key="`${row.name}-${i + 3}`">
           <span class="lb-rank">{{ i + 4 }}</span>
           <span class="lb-rname">{{ row.name }}</span>
           <span class="lb-rscore">{{ row.correct }} / {{ row.answered }}</span>

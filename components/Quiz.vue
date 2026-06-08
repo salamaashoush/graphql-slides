@@ -20,19 +20,23 @@ const props = withDefaults(defineProps<Props>(), {
 
 const selected = ref<number | null>(null)
 const revealed = ref(false)
+const submitted = ref(false)
 
 function choose(i: number) {
-  if (revealed.value) return
+  if (revealed.value || submitted.value) return
   selected.value = i
   revealed.value = true
+  submitted.value = true
   if (props.qid) {
     void recordAnswer(props.qid, i, i === props.answer)
   }
 }
 
 function reset() {
+  if (props.qid) return
   selected.value = null
   revealed.value = false
+  submitted.value = false
 }
 
 const letters = 'ABCDEFGH'.split('')
@@ -53,26 +57,40 @@ const isCorrect = computed(() => revealed.value && selected.value === props.answ
       <span class="quiz-q" :class="{ 'quiz-q--multi': multiline }">{{ question }}</span>
     </div>
 
-    <ul class="quiz-opts">
+    <ul class="quiz-opts" role="list">
       <li
         v-for="(opt, i) in options"
         :key="i"
-        class="quiz-opt"
-        :class="`is-${stateOf(i)}`"
-        @click="choose(i)"
       >
-        <span class="quiz-letter">{{ letters[i] }}</span>
-        <span class="quiz-text" v-html="opt" />
-        <span v-if="stateOf(i) === 'correct'" class="quiz-mark">✓</span>
-        <span v-else-if="stateOf(i) === 'wrong'" class="quiz-mark">✗</span>
+        <button
+          class="quiz-opt"
+          type="button"
+          :class="`is-${stateOf(i)}`"
+          :disabled="revealed"
+          :aria-pressed="selected === i"
+          @click="choose(i)"
+        >
+          <span class="quiz-letter">{{ letters[i] }}</span>
+          <span class="quiz-text" v-html="opt" />
+          <span v-if="stateOf(i) === 'correct'" class="quiz-mark" aria-hidden="true">✓</span>
+          <span v-else-if="stateOf(i) === 'wrong'" class="quiz-mark" aria-hidden="true">✗</span>
+          <span v-if="stateOf(i) === 'correct'" class="sr-only">Correct answer</span>
+          <span v-else-if="stateOf(i) === 'wrong'" class="sr-only">Your answer, incorrect</span>
+        </button>
       </li>
     </ul>
 
     <transition name="quiz-fade">
-      <div v-if="revealed" class="quiz-explain" :class="isCorrect ? 'is-good' : 'is-bad'">
+      <div
+        v-if="revealed"
+        class="quiz-explain"
+        :class="isCorrect ? 'is-good' : 'is-bad'"
+        aria-live="polite"
+      >
         <div class="quiz-verdict">{{ isCorrect ? 'Correct!' : 'Not quite —' }}</div>
         <div class="quiz-why" v-html="explanation" />
-        <button class="quiz-reset" @click="reset">try again</button>
+        <div v-if="qid" class="quiz-counted">First answer counted for the leaderboard.</div>
+        <button v-else class="quiz-reset" type="button" @click="reset">try again</button>
       </div>
     </transition>
   </div>
@@ -111,8 +129,10 @@ const isCorrect = computed(() => revealed.value && selected.value === props.answ
   gap: 0.5rem;
 }
 .quiz-opt {
+  width: 100%;
   display: flex;
   align-items: center;
+  text-align: left;
   gap: 0.7rem;
   padding: 0.6rem 0.85rem;
   border: 1px solid var(--tn-bg2);
@@ -120,10 +140,19 @@ const isCorrect = computed(() => revealed.value && selected.value === props.answ
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.16s ease;
+  color: inherit;
+  font: inherit;
 }
 .quiz-opt.is-idle:hover {
   border-color: var(--tn-blue);
   transform: translateX(3px);
+}
+.quiz-opt:focus-visible {
+  outline: 3px solid var(--tn-cyan);
+  outline-offset: 3px;
+}
+.quiz-opt:disabled {
+  cursor: default;
 }
 .quiz-opt.is-correct {
   border-color: var(--tn-green);
@@ -192,6 +221,26 @@ const isCorrect = computed(() => revealed.value && selected.value === props.answ
   cursor: pointer;
 }
 .quiz-reset:hover { color: var(--tn-fg); border-color: var(--tn-fg); }
+.quiz-reset:focus-visible {
+  outline: 2px solid var(--tn-cyan);
+  outline-offset: 2px;
+}
+.quiz-counted {
+  margin-top: 0.45rem;
+  font-size: 0.72rem;
+  color: var(--tn-comment);
+}
 .quiz-fade-enter-active { transition: all 0.25s ease; }
 .quiz-fade-enter-from { opacity: 0; transform: translateY(-6px); }
+.sr-only {
+  position: absolute;
+  clip-path: inset(50%);
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  white-space: nowrap;
+}
 </style>

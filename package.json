@@ -6,13 +6,16 @@
     "dev": "slidev --open",
     "present": "slidev --port 3030 --remote",
     "build": "slidev build",
-    "export": "slidev export"
+    "export": "slidev export",
+    "examples": "node examples/cli.js"
   },
   "dependencies": {
     "@slidev/cli": "^51.0.0",
     "@slidev/theme-default": "^0.25.0",
     "@slidev/theme-seriph": "^0.25.0",
     "@supabase/supabase-js": "^2.106.2",
+    "dataloader": "^2.2.3",
+    "graphql": "^16.14.1",
     "vue": "^3.5.13"
   }
 }

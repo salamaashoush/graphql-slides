@@ -1,10 +1,9 @@
 ---
 theme: default
-title: GraphQL — A Practical Introduction
+title: GraphQL — Practical Workshop
 info: |
-  ## GraphQL — A Practical Introduction
-  Concepts, patterns, and how to ship — server and client.
-  Answer the live questions after each section.
+  ## GraphQL — Practical Workshop
+  Concepts, patterns, live examples, and how to ship — server and client.
 class: text-center
 highlighter: shiki
 lineNumbers: true
@@ -21,44 +20,97 @@ themeConfig:
 ---
 
 # GraphQL
-## A Practical Introduction
+## Practical Workshop
 
 <div class="muted" style="margin-top:1.2rem">
-the type system &nbsp;•&nbsp; resolvers &amp; DataLoader &nbsp;•&nbsp; schema design &nbsp;•&nbsp; the client &nbsp;•&nbsp; how to ship
+query shape &nbsp;•&nbsp; resolvers &amp; DataLoader &nbsp;•&nbsp; schema design &nbsp;•&nbsp; production guards &nbsp;•&nbsp; the client
 </div>
 
 <div style="margin-top:2.5rem" class="muted text-sm">
-Answer the <span class="tag">LIVE QUESTION</span> after each section — press <kbd>→</kbd> to begin
+Run the <span class="tag">TERMINAL DEMOS</span>, answer live checkpoints, and edit examples as we go.
 </div>
 
 <!--
-Practical intro. Pattern per section: learn the concept, see a runnable example,
-then the room answers a live question. Vendor-neutral; examples are realistic but generic.
+Practical workshop. Pattern per section: explain the concept, run a broken/fixed demo,
+make a small edit, then answer a live question. Vendor-neutral; examples are realistic but generic.
 -->
 
 ---
 layout: center
 ---
 
-# What you'll walk away with
+# What you'll build intuition for
 
 <div class="col-2" style="margin-top:1.5rem; text-align:left">
 <div class="card">
 
 ### Read & write
-Read any SDL schema, write queries / mutations / fragments, and reason about what comes back.
+Read SDL, write operations/fragments, and predict the exact response shape.
 
 </div>
 <div class="card">
 
 ### Build & ship
-Understand resolvers, the N+1 trap, schema-design conventions, the client cache, and how a change flows end-to-end.
+Recognize N+1, choose sane schema shapes, handle errors, protect production, and reason about the client cache.
 
 </div>
 </div>
 
 <div class="muted text-sm" style="margin-top:1.5rem">
-Each idea comes with a runnable example and a live question. By the end you can confidently start working on a GraphQL codebase — server or client.
+Each section has a broken/fixed terminal example. By the end you can confidently start reading and contributing to a GraphQL codebase — server or client.
+</div>
+
+---
+layout: center
+---
+
+# Workshop setup
+
+<div style="max-width:52rem; margin:1rem auto; text-align:left">
+
+<CopyCommand demo="list" label="Setup: clone if needed, install, list examples" />
+
+<div class="lab-steps">
+
+1. Copy and run the setup command.
+2. Keep a terminal open beside the slides.
+3. When a lab slide appears, run the command and make one small edit.
+4. If setup is slow, follow the presenter output and keep going.
+
+</div>
+</div>
+
+---
+layout: center
+---
+
+# Flow
+
+<div class="col-2" style="text-align:left; margin-top:1rem">
+<div class="card">
+
+### Server side
+1. query shape + validation
+2. resolver lifecycle
+3. N+1 → DataLoader
+4. nullability + errors-as-data
+5. pagination + deprecation
+
+</div>
+<div class="card">
+
+### Shipping + client
+1. BFF/gateway shape
+2. cost guards + rate limits
+3. codegen
+4. normalized cache
+5. optimistic UI + unreleased fields
+
+</div>
+</div>
+
+<div class="muted text-sm" style="margin-top:1rem">
+Default pace: 75-90 minutes with short labs. For a 60-minute session, run only <code>shape</code>, <code>dataloader</code>, <code>errors</code>, and <code>client</code>.
 </div>
 
 ---
@@ -68,7 +120,7 @@ class: text-center
 
 # Join the quiz <span style="font-size:0.8em">🏆</span>
 
-<div class="muted" style="margin-bottom:1.6rem">answer the live questions after each section — top 3 win a prize at the end</div>
+<div class="muted" style="margin-bottom:1.6rem">answer the live checkpoints — first answer counts, top 3 win a prize at the end</div>
 
 <JoinGate />
 
@@ -273,7 +325,7 @@ type Subscription {            # STREAM — long-lived, over SSE/WebSocket
 
 ---
 
-# One endpoint. HTTP 200 even on errors.
+# One endpoint. Data can be partial.
 
 ```bash {all|1-7|8}
 curl -X POST https://api.example.com/graphql \
@@ -282,7 +334,7 @@ curl -X POST https://api.example.com/graphql \
     "query": "query($id: ID!) { user(id: $id) { name role } }",
     "variables": { "id": "42" }
   }'
-# -> HTTP 200,  body: { "data": {...}, "errors": [...] }
+# -> often HTTP 200, body: { "data": {...}, "errors": [...] }
 ```
 
 <div class="col-2" style="margin-top:1rem">
@@ -293,7 +345,7 @@ curl -X POST https://api.example.com/graphql \
 </div>
 <div class="card">
 
-⚠️ Status is usually **200 even when a field errors**. Always check the **`errors[]`** array — `data` can be partially present.
+⚠️ Field execution errors often return **200 with partial data**. Validation/auth/rate-limit failures may be **4xx**. Always check **`errors[]`**.
 
 </div>
 </div>
@@ -362,14 +414,14 @@ query IntrospectTheSchema {
 layout: center
 ---
 
-# 🔴 Try it yourself
+# 🔴 Live demo
 
-## Open a GraphQL IDE
+## Watch the response shape
 
 <div style="text-align:left; max-width:42rem; margin:1.5rem auto">
 
 ```graphql
-# In GraphiQL / Apollo Sandbox, run a real query:
+# In GraphiQL / Apollo Sandbox:
 query {
   user(id: "42") { name role posts(limit: 2) { title } }
 }
@@ -377,7 +429,13 @@ query {
 
 </div>
 
-<div class="muted">Watch <code>data</code> mirror your selection set · browse the docs panel (that's introspection) · add a bogus field → <code>GRAPHQL_VALIDATION_FAILED</code> <em>before</em> anything executes.</div>
+<div class="muted">Notice <code>data</code> mirrors the selection set · autocomplete comes from introspection · a bogus field fails validation <em>before</em> resolvers execute.</div>
+
+<CopyCommand demo="shape" label="Terminal demo: broken REST shape → fixed GraphQL shape" />
+
+<div class="lab-steps compact">
+Run it once, then add <code>email</code> to the query in <code>examples/01-query-shape.js</code>. Rerun and verify only requested fields appear.
+</div>
 
 ---
 layout: center
@@ -602,6 +660,12 @@ Post: {
 
 <div class="bad text-sm">⚠️ Build loaders <strong>per request</strong> (never module-global) — a shared cache would leak one user's data into another's. And <code>await</code>-in-a-loop defeats batching.</div>
 
+<CopyCommand demo="dataloader" label="Terminal demo: broken N+1 → fixed DataLoader batching" />
+
+<div class="lab-steps compact">
+Compare <code>userFetches: 3</code> with <code>userBatchFetches: 1</code>. Then trace <code>post.authorId</code> into the <code>Post.author</code> resolver.
+</div>
+
 ---
 
 # Two patterns that keep loaders sane
@@ -644,12 +708,12 @@ class: text-center
 
 <Quiz
   qid="q3-n-plus-1"
-  question="A query returns 50 posts, and each Post.author resolver fetches its user. Awaiting the fetch per post is slow. What fixes it?"
+  question="A query returns 50 posts, and each Post.author resolver fetches its user one-by-one. What fixes it?"
   :options="[
     'Add an index to the users table and call it a day',
     'Batch the 50 author fetches into one call with a per-request DataLoader',
     'Mark the author field non-null so it resolves faster',
-    'Move the author fetch into the Query.posts resolver',
+    'Keep doing one user fetch per post, just from Query.posts',
   ]"
   :answer="1"
   explanation="This is the N+1 problem: 1 list query + 50 author fetches. A <strong>DataLoader</strong> coalesces the 50 <code>.load()</code> calls in a tick into a single batched fetch and dedupes by key within the request."
@@ -773,6 +837,12 @@ extend type Query {
 
 <div class="bad text-sm">⚠️ <code>after</code>/<code>first</code> with a cursor is stable under concurrent inserts/deletes; <code>offset</code> is not.</div>
 
+<CopyCommand demo="schema" label="Terminal demo: broken offset pagination → fixed cursor pagination" />
+
+<div class="lab-steps compact">
+Change <code>files(first: 2)</code> to <code>files(first: 3)</code> in <code>examples/04-schema-design.js</code> and inspect <code>pageInfo</code>.
+</div>
+
 ---
 
 # Mutation responses + errors-as-data
@@ -813,14 +883,20 @@ type CreatePostResponse {
 
 <div class="muted text-sm">Client switches on <code>__typename</code> instead of string-matching messages. The transport <code>errors[]</code> stays for the <em>unexpected</em>.</div>
 
+<CopyCommand demo="errors" label="Terminal demo: null bubbling and typed errors-as-data" />
+
+<div class="lab-steps compact">
+Compare nullable <code>bio</code> failure with non-null <code>reputation</code> failure. Then change <code>createFolder("inbox")</code> to a new name.
+</div>
+
 ---
 
-# Versioning by deprecation — never /v2
+# Versioning by deprecation
 
 <div class="col-2">
 <div>
 
-GraphQL evolves **additively**. There is no `/v2` endpoint.
+GraphQL usually evolves **additively**. Prefer one graph over a parallel `/v2`.
 
 1. Add the new field.
 2. Mark the old one `@deprecated` with a **dated** removal plan.
@@ -845,7 +921,7 @@ type Post {
 </div>
 </div>
 
-<div class="muted text-sm">A parallel <code>/v2</code> schema fragments the graph and doubles maintenance. Deprecate in place.</div>
+<div class="muted text-sm">A parallel <code>/v2</code> schema fragments the graph and doubles maintenance. Deprecate in place unless a truly incompatible platform split forces otherwise.</div>
 
 ---
 layout: center
@@ -1036,6 +1112,12 @@ if (!ok) throw new TooManyRequests({ retryAfter })
 
 <div class="muted text-sm">Apply the same cost checks to <strong>subscriptions</strong>, not just queries — a long-lived stream is expensive too.</div>
 
+<CopyCommand demo="production" label="Terminal demo: broken request counting → fixed cost guards" />
+
+<div class="lab-steps compact">
+Lower the demo cost budget from <code>30</code> to <code>5</code>, rerun, and decide whether the normal query should still pass.
+</div>
+
 ---
 
 # Errors & subscriptions
@@ -1182,6 +1264,12 @@ useQuery(GET_USER, { variables: { id } }) // fully typed — no casts, no any
 
 <div class="muted text-sm">Autocomplete on fields, a red squiggle the moment you request a field that doesn't exist. The schema is the source of truth.</div>
 
+<CopyCommand demo="client" label="Terminal demo: type drift → generated operation shape" />
+
+<div class="lab-steps compact">
+Look for the hand-written <code>fullName</code> type mismatch, then connect it to why generated operation types matter in review.
+</div>
+
 ---
 
 # The codegen workflow
@@ -1238,7 +1326,7 @@ flowchart LR
 </div>
 
 <div class="muted text-sm" style="margin-top:0.8rem">
-GraphQL has <strong>no URL to HTTP-cache</strong> (it's all one POST) — which is exactly <em>why</em> clients normalize the response graph into a flat store. A mutation that returns the changed entity auto-updates every view of it.
+Typical GraphQL clients use one POST endpoint, so browser/CDN URL caching is less useful than with REST. Client caches instead normalize the response graph into a flat store. A mutation that returns the changed entity auto-updates every view of it.
 </div>
 
 <div class="card" style="margin-top:0.6rem">
@@ -1265,6 +1353,12 @@ new InMemoryCache({
 ```
 
 <div class="muted text-sm">The cache needs to know how to <strong>identify</strong> each entity (<code>keyFields</code>), how interfaces map to concrete types (<code>possibleTypes</code>), and how to <strong>merge</strong> paginated results.</div>
+
+<CopyCommand demo="client" label="Terminal demo: broken duplicate copies → fixed normalized cache" />
+
+<div class="lab-steps compact">
+Remove <code>__typename</code> from the Feed query in <code>examples/06-client-cache.js</code> and rerun. Notice why identity is cache infrastructure.
+</div>
 
 ---
 
