@@ -50,8 +50,8 @@ Read SDL, write operations and fragments, and predict the exact response shape.
 </div>
 <div class="card">
 
-### Build &amp; ship
-Recognize N+1, choose sane schema shapes, handle errors, protect production, and reason about the client cache.
+### Design &amp; operate
+Spot the performance and schema tradeoffs — N+1, caching, error handling — that decide whether an API holds up in production.
 
 </div>
 </div>
@@ -75,7 +75,6 @@ layout: center
 1. Copy and run the setup command.
 2. Keep a terminal open beside the slides.
 3. When a demo slide appears, run the one-line example command.
-4. If setup is slow, follow the presenter output and keep going.
 
 </div>
 </div>
@@ -106,7 +105,6 @@ layout: center
 
 <div class="agenda-flow">
 <div class="agenda-item">
-  <span class="agenda-time">08-25</span>
   <div>
     <h3>Fundamentals</h3>
     <p>type system, single endpoint, query == response, operations, directives, polymorphism — then 2 questions</p>
@@ -114,7 +112,6 @@ layout: center
   </div>
 </div>
 <div class="agenda-item">
-  <span class="agenda-time">25-40</span>
   <div>
     <h3>Resolvers &amp; DataLoader</h3>
     <p>resolver tree, context, the N+1 trap, the DataLoader fix — then 2 questions</p>
@@ -122,7 +119,6 @@ layout: center
   </div>
 </div>
 <div class="agenda-item">
-  <span class="agenda-time">40-55</span>
   <div>
     <h3>Schema design</h3>
     <p>nullability, scalars, naming, cursor pagination, errors-as-data, deprecation — then 3 questions</p>
@@ -130,7 +126,6 @@ layout: center
   </div>
 </div>
 <div class="agenda-item">
-  <span class="agenda-time">55-66</span>
   <div>
     <h3>Production concerns</h3>
     <p>gateway/BFF, cost guards, error hygiene, subscriptions — then 2 questions</p>
@@ -138,7 +133,6 @@ layout: center
   </div>
 </div>
 <div class="agenda-item">
-  <span class="agenda-time">66-85</span>
   <div>
     <h3>The client</h3>
     <p>codegen, normalized cache, fetch policy, fragments, optimistic UI — then 3 questions</p>
@@ -148,7 +142,7 @@ layout: center
 </div>
 
 <div class="muted text-sm" style="margin-top:0.7rem">
-85-90 · recap, bonus round, and the leaderboard.
+Then: recap, bonus round, and the leaderboard.
 </div>
 
 ---
@@ -390,31 +384,49 @@ query GetUser {
 
 ---
 
-# Relating types: interfaces &amp; unions
+# Interfaces: shared fields across types
 
-<div class="muted text-sm" style="margin-bottom:0.4rem">What if one field can return <em>more than one</em> type — say a search that yields users <em>or</em> posts? Two tools for that:</div>
+<div class="muted text-sm" style="margin-bottom:0.4rem">An <strong>interface</strong> is a contract of fields every implementor must have. A field typed as the interface can return any implementor.</div>
 
-```graphql {all|1-5|7|9-15}
-interface Node {       # interface = SHARED fields across types
+```graphql {all|1-5|7-13}
+interface Node {       # the shared contract
   id: ID!
 }
 type User implements Node { id: ID!  name: String! }
 type Post implements Node { id: ID!  title: String! }
 
-union SearchResult = User | Post   # union = one-of, NO shared fields required
-
 query {
-  search(term: "ada") {
-    ... on User { name }    # pick fields only when the value is a User
+  node(id: "1") {           # field typed as the INTERFACE Node
+    id                      # shared field → query it directly
+    ... on User { name }    # ... on Concrete → fields unique to ONE implementor
     ... on Post { title }
-    __typename              # built-in meta-field: the concrete type name at runtime
   }
 }
 ```
 
-<div class="muted text-sm"><strong>Interface</strong> = types that share queryable fields. <strong>Union</strong> = a one-of with nothing in common. The server decides which concrete type a value is via <code>__resolveType</code> (a resolver — next chapter).</div>
+<div class="muted text-sm">Query the shared fields directly; reach for <code>... on Concrete</code> only for fields that aren't on the interface. <code>... on Type</code> is an <strong>inline fragment</strong> — it narrows the selection to one concrete type.</div>
 
-<div class="muted text-sm" style="margin-top:0.4rem">The <code>... on User</code> form is an <strong>inline fragment</strong> — it selects fields only when the value is that concrete type. <code>__typename</code> returns the runtime type name (so the client knows which it got), and later doubles as the client cache's identity key.</div>
+---
+
+# Unions: one-of, nothing shared
+
+<div class="muted text-sm" style="margin-bottom:0.4rem">A <strong>union</strong> says a field returns one of several types that share <em>no</em> fields — e.g. a search that yields users <em>or</em> posts.</div>
+
+```graphql {all|1|3-10}
+union SearchResult = User | Post   # one-of — NO shared fields
+
+query {
+  search(term: "ada") {     # field returns a UNION
+    ... on User { name }    # nothing shared → EVERY field sits in a `... on`
+    ... on Post { title }
+    __typename              # built-in: the concrete type name at runtime
+  }
+}
+```
+
+<div class="muted text-sm">Same <code>... on Type</code> inline fragment as interfaces — a union just has no shared fields, so <em>every</em> selection goes inside one. The server picks which concrete type a value is via <code>__resolveType</code> (a resolver — next chapter).</div>
+
+<div class="muted text-sm" style="margin-top:0.4rem"><code>__typename</code> returns the runtime type name so the client knows what it got — and later doubles as the client cache's identity key.</div>
 
 ---
 
@@ -486,24 +498,25 @@ curl -X POST https://api.example.com/graphql \
 A **directive** is an annotation, written `@name(args)`, attached to a schema element or a query element. They change how that element is treated — without changing its type.
 
 - **Built-in:** `@deprecated`, `@include(if:)`, `@skip(if:)`, `@specifiedBy(url:)`
-- **Custom:** you can define your own, e.g. `@cost(weight:)`
+- **Custom:** declare with `directive @name(args) on <LOCATIONS>` — the locations (`FIELD_DEFINITION`, `OBJECT`, `ARGUMENT_DEFINITION`, …) say where it may be used.
+- Always written **after** the element it annotates; never before.
 
 </div>
 <div>
 
-```graphql
-# on the schema
+```graphql {all|1-2|4-5|6-7|11-13}
+# define your own — list where it's allowed
+directive @cost(weight: Int!) on FIELD_DEFINITION
+
 type Post {
+  feed: [Post!]! @cost(weight: 5)        # apply the custom one
   modifiedAt: DateTime!
-    @deprecated(reason: "use updatedAt instead [2026-09-01]")
+    @deprecated(reason: "use updatedAt")  # built-in, same syntax
 }
 
-# on a query
+# @skip / @include live in the QUERY, not the schema
 query {
-  user(id: "1") {
-    name
-    riskScore @include(if: $withRisk)
-  }
+  user(id: "1") { riskScore @include(if: $withRisk) }
 }
 ```
 
@@ -511,6 +524,39 @@ query {
 </div>
 
 <div class="muted text-sm">Every later <code>@x</code> in this talk — deprecation, cost limiting, the unreleased-field trap — is an instance of this one feature.</div>
+---
+
+# Documenting the schema
+
+<div class="col-2">
+<div>
+
+Two ways to add prose to SDL — only one is part of the schema:
+
+- `#` is a **comment** — for authors reading the file. The parser drops it; it never reaches the API.
+- `"""…"""` is a **description** (Markdown). It *is* part of the schema — introspection serves it, so it shows up in tooling docs.
+
+</div>
+<div>
+
+```graphql
+# internal note — never leaves the file
+
+"""A person with access to the workspace."""
+type User {
+  "Unique, stable identifier."
+  id: ID!
+
+  """Posts authored by this user."""
+  posts(limit: Int = 10): [Post!]!
+}
+```
+
+</div>
+</div>
+
+<div class="muted text-sm">Single-line <code>"…"</code> works too. Descriptions are how the docs panel and codegen get their copy — write them for fields anyone else will consume.</div>
+
 ---
 
 # Introspection powers the tooling

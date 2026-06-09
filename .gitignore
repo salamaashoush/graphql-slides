@@ -6,3 +6,6 @@ dist/
 temp/
 *.log
 .DS_Store
+
+# Presenter-only quiz answer key
+ANSWERS.md

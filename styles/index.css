@@ -145,26 +145,11 @@
   text-align: left;
 }
 .agenda-item {
-  display: grid;
-  grid-template-columns: 4.2rem 1fr;
-  gap: 0.85rem;
-  align-items: start;
   padding: 0.7rem 0.85rem;
   border: 1px solid var(--tn-bg3);
   border-left: 3px solid var(--tn-green);
   border-radius: 0.45rem;
   background: rgba(36, 40, 59, 0.6);
-}
-.agenda-time {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 1.7rem;
-  border-radius: 999px;
-  background: rgba(122, 162, 247, 0.12);
-  color: var(--tn-blue);
-  border: 1px solid rgba(122, 162, 247, 0.35);
-  font: 700 0.72rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 .agenda-item h3 {
   margin: 0;
