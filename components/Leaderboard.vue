@@ -5,6 +5,7 @@ import { getLeaderboard, onAnswersChange, quizEnabled, type LeaderRow } from '..
 const rows = ref<LeaderRow[]>([])
 const loading = ref(false)
 let stop: (() => void) | null = null
+let poll: ReturnType<typeof setInterval> | null = null
 
 async function refresh() {
   loading.value = true
@@ -15,8 +16,13 @@ async function refresh() {
 onMounted(() => {
   refresh()
   stop = onAnswersChange(refresh)
+  // Realtime can drop on free-tier projects; poll as a safety net so the live board never goes stale.
+  poll = setInterval(refresh, 15000)
 })
-onUnmounted(() => stop?.())
+onUnmounted(() => {
+  stop?.()
+  if (poll) clearInterval(poll)
+})
 
 const podium = computed(() => rows.value.slice(0, 3))
 const rest = computed(() => rows.value.slice(3))
@@ -27,7 +33,7 @@ const medals = ['🥇', '🥈', '🥉']
   <div class="lb">
     <div v-if="!quizEnabled" class="lb-empty">
       Scoring backend not configured. Set <code>VITE_SUPABASE_URL</code> +
-      <code>VITE_SUPABASE_ANON_KEY</code> and redeploy to enable the live board.
+      <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> and redeploy to enable the live board.
     </div>
 
     <template v-else>

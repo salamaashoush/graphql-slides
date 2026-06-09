@@ -48,5 +48,12 @@ language sql stable as $$
   limit top_n
 $$;
 
--- For the live-updating board, enable Realtime on the `answers` table:
---   Supabase Dashboard -> Database -> Replication -> add `answers` to the publication.
+-- The live-updating board listens for realtime changes on `answers`, which
+-- requires the table to be in the `supabase_realtime` publication. Do it here
+-- instead of via the dashboard so a fresh project is fully wired by this script.
+do $$
+begin
+  alter publication supabase_realtime add table answers;
+exception
+  when duplicate_object then null;
+end $$;
