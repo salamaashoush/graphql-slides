@@ -27,12 +27,12 @@ query shape &nbsp;•&nbsp; resolvers &amp; DataLoader &nbsp;•&nbsp; schema de
 </div>
 
 <div style="margin-top:2.5rem" class="muted text-sm">
-Run the <span class="tag">TERMINAL DEMOS</span>, answer live checkpoints, and edit examples as we go.
+Each section <strong>teaches the concepts</strong>, runs a <span class="tag">TERMINAL DEMO</span>, then ends with a few <strong>live questions</strong> to test understanding.
 </div>
 
 <!--
-Practical workshop. Pattern per section: explain the concept, run a broken/fixed demo,
-make a small edit, then answer a live question. Vendor-neutral; examples are realistic but generic.
+Pattern, every section: explain the concepts, run a broken/fixed demo, then 2-3 live questions
+at the end of the section. Vendor-neutral; examples are realistic but generic.
 -->
 
 ---
@@ -44,20 +44,20 @@ layout: center
 <div class="col-2" style="margin-top:1.5rem; text-align:left">
 <div class="card">
 
-### Read & write
-Read SDL, write operations/fragments, and predict the exact response shape.
+### Read &amp; write
+Read SDL, write operations and fragments, and predict the exact response shape.
 
 </div>
 <div class="card">
 
-### Build & ship
+### Build &amp; ship
 Recognize N+1, choose sane schema shapes, handle errors, protect production, and reason about the client cache.
 
 </div>
 </div>
 
 <div class="muted text-sm" style="margin-top:1.5rem">
-Each section has a broken/fixed terminal example. By the end you can confidently start reading and contributing to a GraphQL codebase — server or client.
+By the end you can confidently start reading and contributing to a GraphQL codebase — server or client.
 </div>
 
 ---
@@ -68,13 +68,13 @@ layout: center
 
 <div style="max-width:52rem; margin:1rem auto; text-align:left">
 
-<CopyCommand demo="list" label="Setup: clone if needed, install, list examples" />
+<CopyCommand demo="list" setup label="Setup: clone, install, list examples" />
 
 <div class="lab-steps">
 
 1. Copy and run the setup command.
 2. Keep a terminal open beside the slides.
-3. When a lab slide appears, run the command and make one small edit.
+3. When a demo slide appears, run the one-line example command.
 4. If setup is slow, follow the presenter output and keep going.
 
 </div>
@@ -84,33 +84,71 @@ layout: center
 layout: center
 ---
 
+# The shape of a GraphQL system
+
+```mermaid {theme:'dark', scale:0.85}
+flowchart LR
+  U[User] --> C[Client]
+  C -->|"POST /graphql"| S[GraphQL server]
+  S --> B[("DB / REST /<br/>backends")]
+  B --> S --> C --> U
+```
+
+<div class="muted text-sm" style="margin-top:0.6rem">
+One typed endpoint in. The server resolves exactly the fields requested from whatever backends it has, and returns that precise shape. We'll name what lives inside the client and the server as we go — and return to this picture, fully labeled, at the end.
+</div>
+
+---
+layout: center
+---
+
 # Flow
 
-<div class="col-2" style="text-align:left; margin-top:1rem">
-<div class="card">
-
-### Server side
-1. query shape + validation
-2. resolver lifecycle
-3. N+1 → DataLoader
-4. nullability + errors-as-data
-5. pagination + deprecation
-
+<div class="agenda-flow">
+<div class="agenda-item">
+  <span class="agenda-time">08-25</span>
+  <div>
+    <h3>Fundamentals</h3>
+    <p>type system, single endpoint, query == response, operations, directives, polymorphism — then 2 questions</p>
+    <code>npm run examples -- shape</code>
+  </div>
 </div>
-<div class="card">
-
-### Shipping + client
-1. BFF/gateway shape
-2. cost guards + rate limits
-3. codegen
-4. normalized cache
-5. optimistic UI + unreleased fields
-
+<div class="agenda-item">
+  <span class="agenda-time">25-40</span>
+  <div>
+    <h3>Resolvers &amp; DataLoader</h3>
+    <p>resolver tree, context, the N+1 trap, the DataLoader fix — then 2 questions</p>
+    <code>npm run examples -- dataloader</code>
+  </div>
+</div>
+<div class="agenda-item">
+  <span class="agenda-time">40-55</span>
+  <div>
+    <h3>Schema design</h3>
+    <p>nullability, scalars, naming, cursor pagination, errors-as-data, deprecation — then 3 questions</p>
+    <code>npm run examples -- schema</code>
+  </div>
+</div>
+<div class="agenda-item">
+  <span class="agenda-time">55-66</span>
+  <div>
+    <h3>Production concerns</h3>
+    <p>gateway/BFF, cost guards, error hygiene, subscriptions — then 2 questions</p>
+    <code>npm run examples -- production</code>
+  </div>
+</div>
+<div class="agenda-item">
+  <span class="agenda-time">66-85</span>
+  <div>
+    <h3>The client</h3>
+    <p>codegen, normalized cache, fetch policy, fragments, optimistic UI — then 3 questions</p>
+    <code>npm run examples -- client</code>
+  </div>
 </div>
 </div>
 
-<div class="muted text-sm" style="margin-top:1rem">
-Default pace: 75-90 minutes with short labs. For a 60-minute session, run only <code>shape</code>, <code>dataloader</code>, <code>errors</code>, and <code>client</code>.
+<div class="muted text-sm" style="margin-top:0.7rem">
+85-90 · recap, bonus round, and the leaderboard.
 </div>
 
 ---
@@ -120,33 +158,9 @@ class: text-center
 
 # Join the quiz <span style="font-size:0.8em">🏆</span>
 
-<div class="muted" style="margin-bottom:1.6rem">answer the live checkpoints — first answer counts, top 3 win a prize at the end</div>
+<div class="muted" style="margin-bottom:1.6rem">each section ends with live questions — first answer counts, top 3 win a prize at the end</div>
 
 <JoinGate />
-
----
-layout: center
----
-
-# The shape of a GraphQL system
-
-```mermaid {theme:'dark', scale:0.7}
-flowchart LR
-  U[User] --> C
-  subgraph C[Client]
-    H["useQuery /<br/>useMutation"] --> AC["GraphQL client<br/>+ normalized cache"]
-  end
-  AC -->|"POST /graphql"| S
-  subgraph S[GraphQL server]
-    R["resolvers"] --> L["DataLoaders"]
-  end
-  L --> DATA[("DB / REST /<br/>backends")]
-  DATA --> L --> R --> AC --> H --> U
-```
-
-<div class="muted text-sm" style="margin-top:0.5rem">
-One typed endpoint in. The server resolves exactly the fields requested from whatever backends it has, and returns that precise shape.
-</div>
 
 ---
 layout: section
@@ -164,8 +178,8 @@ layout: section
 
 GraphQL is a **query language + a server runtime** for APIs.
 
-- The **schema is the contract** — written in SDL, strongly typed. Validation + tooling come for free.
-- The client **declares the exact shape** it wants; the server returns **precisely that** — no more, no less.
+- The **schema is the contract** — written in SDL, strongly typed. Validation and tooling come for free.
+- The client **declares the shape** it wants; the server returns **precisely that**.
 - **Transport- and database-agnostic.** It sits on top of any backend (REST, DB, microservices).
 
 </div>
@@ -208,10 +222,10 @@ It is an API layer in front of whatever backends you already have.
 
 ```bash
 # REST: a waterfall of round trips
-GET /users/42            # over-fetch: tons of unused fields
-GET /users/42/posts      # [{id,title}, ...]
-GET /posts/101/comments  # ...
-GET /posts/102/comments  # ...
+GET /users/1            # over-fetch: tons of unused fields
+GET /users/1/posts      # [{id,title}, ...]
+GET /posts/101/comments # ...
+GET /posts/102/comments # ...
 ```
 
 </div>
@@ -220,40 +234,118 @@ GET /posts/102/comments  # ...
 ```graphql
 # GraphQL: ONE request, exactly the fields needed, fully nested
 query {
-  user(id: "42") {
+  user(id: "1") {
     name
     posts { title comments { text } }
   }
 }
 ```
 
-<div class="muted text-sm">4 dependent REST calls collapse into a single tailored query. This is the core win.</div>
+<div class="muted text-sm">Four dependent REST calls collapse into a single tailored query. This is the core win.</div>
 
 ---
 
-# SDL is the contract
+# The schema: your first type
 
-```graphql {all|1-5|7-13|12|10}
-enum Role {
-  ADMIN
-  EDITOR
-  VIEWER
-}
+<div class="muted text-sm" style="margin-bottom:0.4rem">SDL = <strong>Schema Definition Language</strong> — the one typed contract the client and server both agree on.</div>
 
+<div class="col-2">
+<div>
+
+An **object type** groups named **fields**. Each field has a type of its own.
+
+The leaves are **scalars** — the built-in primitives:
+
+`ID` · `String` · `Int` · `Float` · `Boolean`
+
+</div>
+<div>
+
+```graphql
 type User {
-  id: ID!            # ! = non-null
+  id: ID!         # unique identifier
   name: String!
-  email: String      # nullable
-  role: Role!
-  posts(limit: Int = 10): [Post!]!   # [..] = list, with a field argument + default
+  email: String
 }
 ```
 
-<v-click>
+</div>
+</div>
 
-**Scalars** (`Int Float String Boolean ID` + custom) · **object types** · **enums** · **interfaces** · **unions** · **input types**. <br/>`!` = non-null, `[]` = list — so `[Post!]!` is a non-null list of non-null Posts.
+<div class="muted text-sm">Object types nest into each other; scalars are where the tree bottoms out. (Custom scalars like <code>DateTime</code> come in Schema design.)</div>
 
-</v-click>
+---
+
+# Non-null and lists: the two modifiers
+
+<div class="col-2">
+<div>
+
+Two symbols modify any field type:
+
+- `!` = **non-null** — the value is guaranteed present
+- `[ ]` = **list** — zero or more of that type
+
+They **compose** — read them inside-out.
+
+</div>
+<div>
+
+```graphql
+type User {
+  email: String        # may be null
+  name:  String!       # never null
+  tags:  [String!]!    # non-null list of
+                       #   non-null strings
+}
+```
+
+</div>
+</div>
+
+<div class="col-2" style="margin-top:0.4rem">
+<div class="card">
+
+`[String]` — list may be null, items may be null <br/>
+`[String!]` — list may be null, items never null
+
+</div>
+<div class="card">
+
+`[String]!` — list never null, items may be null <br/>
+`[String!]!` — neither ever null
+
+</div>
+</div>
+
+---
+
+# Arguments and enums
+
+<div class="col-2">
+<div>
+
+**Fields take arguments** — like function parameters, optionally with a **default**.
+
+**Enums** lock a field to a fixed set of named values.
+
+</div>
+<div>
+
+```graphql
+enum Role { ADMIN EDITOR VIEWER }
+
+type User {
+  role: Role!
+  # argument with a default:
+  posts(limit: Int = 10): [Post!]!
+}
+```
+
+</div>
+</div>
+
+<div class="muted text-sm">So far: <strong>object types</strong>, <strong>scalars</strong>, <strong>fields</strong>, <strong>non-null &amp; lists</strong>, <strong>arguments</strong>, <strong>enums</strong>. Still ahead: <strong>interfaces</strong> &amp; <strong>unions</strong> (next), and <strong>input types</strong> (with mutations).</div>
 
 ---
 
@@ -263,12 +355,12 @@ type User {
 <div>
 <div class="src">// what the client sends</div>
 
-```graphql {all|3-9}
+```graphql {all|3-8}
 query GetUser {
-  user(id: "42") {
+  user(id: "1") {
     name
     role
-    posts(limit: 2) {
+    posts(limit: 1) {
       title
     }
   }
@@ -278,15 +370,14 @@ query GetUser {
 <div>
 <div class="src">// what comes back — identical tree</div>
 
-```json {all|3-11}
+```json {all|3-9}
 {
   "data": {
     "user": {
       "name": "Ada Lovelace",
       "role": "EDITOR",
       "posts": [
-        { "title": "On the Analytical Engine" },
-        { "title": "Notes on Bernoulli Numbers" }
+        { "title": "On the Analytical Engine" }
       ]
     }
   }
@@ -296,6 +387,34 @@ query GetUser {
 </div>
 
 <div class="muted text-sm">No <code>email</code>, no <code>id</code>, no <code>body</code> — they were never requested, so they are absent. <strong>No over-fetch, by construction.</strong></div>
+
+---
+
+# Relating types: interfaces &amp; unions
+
+<div class="muted text-sm" style="margin-bottom:0.4rem">What if one field can return <em>more than one</em> type — say a search that yields users <em>or</em> posts? Two tools for that:</div>
+
+```graphql {all|1-5|7|9-15}
+interface Node {       # interface = SHARED fields across types
+  id: ID!
+}
+type User implements Node { id: ID!  name: String! }
+type Post implements Node { id: ID!  title: String! }
+
+union SearchResult = User | Post   # union = one-of, NO shared fields required
+
+query {
+  search(term: "ada") {
+    ... on User { name }    # pick fields only when the value is a User
+    ... on Post { title }
+    __typename              # built-in meta-field: the concrete type name at runtime
+  }
+}
+```
+
+<div class="muted text-sm"><strong>Interface</strong> = types that share queryable fields. <strong>Union</strong> = a one-of with nothing in common. The server decides which concrete type a value is via <code>__resolveType</code> (a resolver — next chapter).</div>
+
+<div class="muted text-sm" style="margin-top:0.4rem">The <code>... on User</code> form is an <strong>inline fragment</strong> — it selects fields only when the value is that concrete type. <code>__typename</code> returns the runtime type name (so the client knows which it got), and later doubles as the client cache's identity key.</div>
 
 ---
 
@@ -316,12 +435,17 @@ type Mutation {                # WRITE — top-level fields run SERIALLY, in ord
   createPost(input: CreatePostInput!): Post!
 }
 
-type Subscription {            # STREAM — long-lived, over SSE/WebSocket
-  postAdded: Post!
+type Subscription {            # STREAM — a long-lived result the server
+  postAdded: Post!             # pushes new values over time (details in Production)
 }
 ```
 
-<div class="muted text-sm"><strong>Query</strong> fields resolve in parallel; <strong>mutation</strong> fields resolve one-by-one top to bottom. Don't rely on ordering between query fields.</div>
+<div class="muted text-sm"><strong>Query</strong> fields resolve in parallel; top-level <strong>mutation</strong> fields resolve one-by-one, top to bottom. Don't rely on ordering between query fields.</div>
+
+<!--
+Subscription is concept-only in this workshop — no terminal demo backs it. The SDL here is illustrative;
+the workshop schema has no postAdded field. We define what a subscription IS in Production.
+-->
 
 ---
 
@@ -332,7 +456,7 @@ curl -X POST https://api.example.com/graphql \
   -H 'Content-Type: application/json' \
   -d '{
     "query": "query($id: ID!) { user(id: $id) { name role } }",
-    "variables": { "id": "42" }
+    "variables": { "id": "1" }
   }'
 # -> often HTTP 200, body: { "data": {...}, "errors": [...] }
 ```
@@ -345,35 +469,48 @@ curl -X POST https://api.example.com/graphql \
 </div>
 <div class="card">
 
-⚠️ Field execution errors often return **200 with partial data**. Validation/auth/rate-limit failures may be **4xx**. Always check **`errors[]`**.
+⚠️ Field execution errors often return **200 with partial data**. Validation, auth, and rate-limit failures may be **4xx**. Always check **`errors[]`**.
 
 </div>
 </div>
+
+<div class="muted text-sm" style="margin-top:0.6rem">Why a 200 can still carry errors — and how partial data arises (non-null error propagation) — comes in <strong>Resolvers</strong> and <strong>Schema design</strong>.</div>
 
 ---
 
-# Interfaces vs unions
+# Directives: annotations on the schema and queries
 
-```graphql {all|1-5|7|9-15}
-interface Node {       # interface = SHARED fields across types
-  id: ID!
+<div class="col-2">
+<div>
+
+A **directive** is an annotation, written `@name(args)`, attached to a schema element or a query element. They change how that element is treated — without changing its type.
+
+- **Built-in:** `@deprecated`, `@include(if:)`, `@skip(if:)`, `@specifiedBy(url:)`
+- **Custom:** you can define your own, e.g. `@cost(weight:)`
+
+</div>
+<div>
+
+```graphql
+# on the schema
+type Post {
+  modifiedAt: DateTime!
+    @deprecated(reason: "use updatedAt instead [2026-09-01]")
 }
-type User implements Node { id: ID!  name: String! }
-type Post implements Node { id: ID!  title: String! }
 
-union SearchResult = User | Post   # union = one-of, NO shared fields required
-
+# on a query
 query {
-  search(term: "ada") {
-    ... on User { name }    # inline fragment: pick fields per concrete type
-    ... on Post { title }
-    __typename              # reveals the runtime type
+  user(id: "1") {
+    name
+    riskScore @include(if: $withRisk)
   }
 }
 ```
 
-<div class="muted text-sm">Use an <strong>interface</strong> when types share queryable fields; a <strong>union</strong> when they are just a one-of with nothing in common. The server picks the concrete type via a <code>__resolveType</code> function.</div>
+</div>
+</div>
 
+<div class="muted text-sm">Every later <code>@x</code> in this talk — deprecation, cost limiting, the unreleased-field trap — is an instance of this one feature.</div>
 ---
 
 # Introspection powers the tooling
@@ -386,7 +523,7 @@ The schema can describe **itself** at runtime via `__schema` / `__type`.
 This is what powers:
 - autocomplete in **GraphiQL / Apollo Sandbox**
 - the live **docs panel**
-- client **codegen** (typed operations)
+- client **codegen** (typed operations — client section)
 
 </div>
 <div>
@@ -414,27 +551,24 @@ query IntrospectTheSchema {
 layout: center
 ---
 
-# 🔴 Live demo
+# Demo: query shape
 
-## Watch the response shape
+<div style="max-width:50rem; margin:1rem auto; text-align:left">
 
-<div style="text-align:left; max-width:42rem; margin:1.5rem auto">
-
-```graphql
-# In GraphiQL / Apollo Sandbox:
-query {
-  user(id: "42") { name role posts(limit: 2) { title } }
-}
-```
-
-</div>
-
-<div class="muted">Notice <code>data</code> mirrors the selection set · autocomplete comes from introspection · a bogus field fails validation <em>before</em> resolvers execute.</div>
-
-<CopyCommand demo="shape" label="Terminal demo: broken REST shape → fixed GraphQL shape" />
+<CopyCommand demo="shape" label="Demo: REST waterfall -> GraphQL shape" />
 
 <div class="lab-steps compact">
-Run it once, then add <code>email</code> to the query in <code>examples/01-query-shape.js</code>. Rerun and verify only requested fields appear.
+
+1. Run the command.
+2. Compare the REST over-fetch/waterfall output with the GraphQL output.
+3. Add <code>email</code> to the query in <code>examples/01-query-shape.js</code>.
+4. Rerun and confirm the response changes only where the selection set changed.
+
+</div>
+</div>
+
+<div class="muted text-sm" style="margin-top:0.8rem">
+Watch three basics: selected fields define <code>data</code>, invalid fields fail validation, variables stay separate from the query.
 </div>
 
 ---
@@ -442,21 +576,31 @@ layout: center
 class: text-center
 ---
 
-<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Fundamentals</span></div>
+# Check your understanding <span style="font-size:0.7em">— Fundamentals</span>
 
-<div style="max-width:46rem; margin:1.5rem auto; text-align:left">
+<div class="muted" style="margin-top:1rem">two live questions on the type system and operations</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Response shape</span></div>
+
+<div style="max-width:48rem; margin:1rem auto; text-align:left">
 
 <Quiz
   qid="q1-fundamentals-shape"
-  question="A client asks ONLY for a user's name and email. The User type also has id, role, and posts. What's in the response data?"
+  :multiline="true"
+  question="The User type has a non-null field id: ID!. Your query selects only name. What comes back — and is omitting a non-null field even allowed?"
   :options="[
-    'The full User object with all fields',
-    'Only name and email',
-    'name, email, plus id (always auto-included)',
-    'An error — you must request all non-null fields',
+    'An error — non-null fields must always be selected',
+    'Just name; you may omit any field, even a non-null one — ! constrains the value when selected, not whether you select it',
+    'name and id, because a non-null id is added automatically',
+    'name plus every non-null field of User',
   ]"
   :answer="1"
-  explanation="GraphQL returns exactly the fields requested — nothing more. That is precisely how it kills over-fetching. <code>id</code> is never auto-included; you may freely omit non-null fields you do not need."
+  explanation="You request the shape you want and get exactly that. <code>!</code> (non-null) constrains a field <em>value</em> when you select it — it never forces selection, and <code>id</code> is never auto-added."
 />
 
 </div>
@@ -466,21 +610,22 @@ layout: center
 class: text-center
 ---
 
-<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">The lifecycle</span></div>
+<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Root operations</span></div>
 
-<div style="max-width:46rem; margin:1.5rem auto; text-align:left">
+<div style="max-width:48rem; margin:1rem auto; text-align:left">
 
 <Quiz
-  qid="q2-lifecycle-order"
-  question="What is the correct order of the server-side GraphQL request lifecycle?"
+  qid="q15-root-ops"
+  :multiline="true"
+  question="A mutation runs three top-level fields in order: createAccount, then chargeCard(accountId), then sendReceipt(accountId). Can chargeCard rely on createAccount having already finished?"
   :options="[
-    'validate → parse → resolve → execute',
-    'parse → validate → execute → resolve',
-    'execute → parse → resolve → validate',
-    'resolve → execute → validate → parse',
+    'No — top-level fields may run in any order, so chargeCard could run before the account exists',
+    'Yes — top-level mutation fields run serially in document order, so createAccount finishes before chargeCard starts',
+    'Only if all three are wrapped in a transaction directive',
+    'Yes, but only because all three share the same accountId argument',
   ]"
   :answer="1"
-  explanation="The server <strong>parses</strong> the query string into an AST, <strong>validates</strong> it against the schema, then <strong>executes</strong> the operation — calling a <strong>resolver</strong> for each field to produce its value — which is exactly what we dig into next."
+  explanation="Top-level <strong>mutation</strong> fields execute <strong>serially</strong>, top to bottom — each finishes before the next begins, so later writes can depend on earlier ones. Top-level <strong>query</strong> fields run in parallel, so never rely on their order."
 />
 
 </div>
@@ -489,7 +634,7 @@ class: text-center
 layout: section
 ---
 
-# Resolvers & DataLoader
+# Resolvers &amp; DataLoader
 <div class="muted">how fields get their values — and the N+1 trap every team hits</div>
 
 ---
@@ -504,8 +649,7 @@ flowchart LR
   E -->|resolve| R["one resolver per field<br/>→ compose into response"]
 ```
 
-<div class="col-2" style="margin-top:1rem">
-<div class="card">
+<div class="card" style="margin-top:1.2rem; max-width:30rem">
 
 A **resolver** is a function returning one field's value:
 
@@ -514,12 +658,8 @@ A **resolver** is a function returning one field's value:
 ```
 
 </div>
-<div class="card">
 
-Resolvers **compose into a tree**: a field's return value becomes the **`parent`** of its child resolvers.
-
-</div>
-</div>
+<div class="muted text-sm" style="margin-top:0.6rem">Parse the text into an <strong>AST</strong> (abstract syntax tree), validate it against the schema, then execute — calling one resolver per selected field. <strong>Validation runs before execution</strong> (remember this for the unreleased-field trap).</div>
 
 ---
 
@@ -548,7 +688,7 @@ A useful pattern: **return `parent.field` if already present**, otherwise fetch 
 </div>
 </div>
 
-<div class="muted text-sm">A non-null field that resolves to <code>null</code> makes the server throw — and the error <em>propagates up</em>, nulling the parent. Nullability is a real design decision.</div>
+<div class="bad text-sm">⚠️ A non-null field that resolves to <code>null</code> makes the server throw — and the error <em>propagates up</em>, nulling the parent. Nullability is a real design decision — full treatment in Schema design.</div>
 
 ---
 
@@ -586,7 +726,47 @@ const resolvers = {
 </div>
 </div>
 
-<div class="muted text-sm">Each field's return value becomes the <code>parent</code> of its children. Resolution walks <strong>down</strong> the tree, one resolver per field.</div>
+<div class="muted text-sm">Each field's return value becomes the <code>parent</code> of its children. Resolution walks <strong>down</strong> the tree, one resolver per field. <span class="muted">(The demo wires the same logic via a <code>rootValue</code> + per-field closures — same shape, see the comments in <code>examples/lib/workshop-schema.js</code>.)</span></div>
+
+---
+
+# Resolution runs one resolver per field
+
+<div class="col-2">
+<div>
+
+Walk the query top-down. Each field calls its **own** resolver, and that result becomes the **parent** of the fields nested beneath it.
+
+```graphql
+query {
+  posts {            # 1 call → 50 posts
+    title            #   read off the parent
+    author {         #   resolver runs
+      name           #   once PER post
+    }
+  }
+}
+```
+
+</div>
+<div>
+
+<div class="card">
+
+**Calls, for 50 posts**
+
+`Query.posts` → **1** <br/>
+`Post.title` ×50 → from parent, no fetch <br/>
+`Post.author` ×50 → **50 fetches**
+
+<div class="muted text-sm" style="margin-top:0.8rem">A field nested under a <strong>list</strong> resolves <strong>once per item</strong> — cheap when it reads off the parent, costly when the resolver actually fetches.</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="muted text-sm" style="margin-top:1rem; text-align:center">Hold that thought — <code>Post.author</code> firing once per post is exactly the trap on the next slide.</div>
 
 ---
 
@@ -651,7 +831,7 @@ Post: {
 
 <div class="card" style="margin-top:0.6rem">
 
-**Batch** — coalesce a tick's loads into one call.
+**Batch** — coalesce a tick's loads into one call. <br/>
 **Cache** — dedupe identical keys in the request.
 
 </div>
@@ -660,63 +840,67 @@ Post: {
 
 <div class="bad text-sm">⚠️ Build loaders <strong>per request</strong> (never module-global) — a shared cache would leak one user's data into another's. And <code>await</code>-in-a-loop defeats batching.</div>
 
-<CopyCommand demo="dataloader" label="Terminal demo: broken N+1 → fixed DataLoader batching" />
+<CopyCommand demo="dataloader" label="Demo: broken N+1 -> DataLoader batching" />
 
 <div class="lab-steps compact">
-Compare <code>userFetches: 3</code> with <code>userBatchFetches: 1</code>. Then trace <code>post.authorId</code> into the <code>Post.author</code> resolver.
+Compare <code>backendCalls</code> in mode <code>naive</code> vs mode <code>loader</code>. Then trace <code>post.authorId</code> into the <code>Post.author</code> resolver.
 </div>
-
----
-
-# Two patterns that keep loaders sane
-
-<div class="col-2">
-<div>
-
-### Stable keys
-The batch function must return results **in the same order** as the keys it received — map keys → results explicitly.
-
-```ts
-return ids.map(id => byId[id] ?? null)
-```
-
-</div>
-<div>
-
-### Resilient batches
-Use `Promise.allSettled` so **one** failed key doesn't fail the whole list — return an error value for that key only (a **partial response**).
-
-```ts
-const settled = await Promise.allSettled(
-  keys.map(k => fetchOne(k)),
-)
-```
-
-</div>
-</div>
-
-<div class="muted text-sm">In a gateway over many backends, partial responses are essential: a 200 with most of <code>data</code> + one entry in <code>errors[]</code> beats failing the entire query.</div>
 
 ---
 layout: center
 class: text-center
 ---
 
-<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Spot the N+1</span></div>
+# Check your understanding <span style="font-size:0.7em">— Resolvers &amp; DataLoader</span>
 
-<div style="max-width:48rem; margin:1.2rem auto; text-align:left">
+<div class="muted" style="margin-top:1rem">two live questions on resolution and the N+1 fix</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">The lifecycle</span></div>
+
+<div style="max-width:48rem; margin:1rem auto; text-align:left">
+
+<Quiz
+  qid="q2-lifecycle-order"
+  :multiline="true"
+  question="A query asks user(id: 1) { name nickname } but nickname is not in the schema. Where does it fail, and do any resolvers run?"
+  :options="[
+    'At execution — the name resolver runs first, then it fails on nickname',
+    'At validation, before execution — the whole document is checked against the schema, so no resolver runs',
+    'At parsing — the query string is syntactically invalid',
+    'It does not fail; nickname just comes back as null',
+  ]"
+  :answer="1"
+  explanation="Order is parse → <strong>validate</strong> → execute. An unknown field is a <strong>validation</strong> error caught against the schema before any resolver runs — which is also why <code>@include</code> tricks cannot smuggle in unreleased fields."
+/>
+
+</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Debug the N+1</span></div>
+
+<div style="max-width:48rem; margin:1rem auto; text-align:left">
 
 <Quiz
   qid="q3-n-plus-1"
-  question="A query returns 50 posts, and each Post.author resolver fetches its user one-by-one. What fixes it?"
+  :multiline="true"
+  question="You added a DataLoader for Post.author, but the logs STILL show one user query per post. What is the most likely cause?"
   :options="[
-    'Add an index to the users table and call it a day',
-    'Batch the 50 author fetches into one call with a per-request DataLoader',
-    'Mark the author field non-null so it resolves faster',
-    'Keep doing one user fetch per post, just from Query.posts',
+    'The author field is marked non-null, which disables batching',
+    'You await each load() inside a loop, so each runs in its own tick and nothing batches',
+    'DataLoader only batches mutations, not queries',
+    'The users table is missing an index on id',
   ]"
   :answer="1"
-  explanation="This is the N+1 problem: 1 list query + 50 author fetches. A <strong>DataLoader</strong> coalesces the 50 <code>.load()</code> calls in a tick into a single batched fetch and dedupes by key within the request."
+  explanation="DataLoader batches the <code>.load()</code> calls made within one tick. <code>await</code>-ing each load inside a loop pushes each into its own tick, so the batch only ever holds one key. Fire all the <code>.load()</code> calls first, then await."
 />
 
 </div>
@@ -751,6 +935,8 @@ scalar NonEmptyString
 scalar NonNegativeInt  # for pagination `first`
 scalar SafeInt         # numbers > Int32
 ```
+
+<div class="muted text-sm" style="margin-top:0.3rem">Mostly common community scalars (e.g. graphql-scalars) — pick the precise one per field.</div>
 
 </div>
 </div>
@@ -804,7 +990,7 @@ extend type Query {
 <div class="col-2">
 <div>
 
-Never return an **unbounded list** (`users: [User!]!`) — one client can pull the whole table.
+Never return an **unbounded list** (`files: [File!]!`) — one client can pull the whole table.
 
 **Offset/limit** breaks under concurrent writes (skips/duplicates rows) and is slow at depth.
 
@@ -814,10 +1000,10 @@ Never return an **unbounded list** (`users: [User!]!`) — one client can pull t
 <div>
 
 ```graphql
-type PostEdge { cursor: String  node: Post! }
+type FileEdge { cursor: String!  node: File! }
 
-type PostConnection {
-  edges: [PostEdge!]!
+type FileConnection {
+  edges: [FileEdge!]!
   pageInfo: PageInfo!
   totalCount: Int          # nullable: backend may not count
 }
@@ -828,7 +1014,7 @@ type PageInfo {
 }
 
 extend type Query {
-  posts(first: NonNegativeInt, after: String): PostConnection!
+  files(first: NonNegativeInt = 2, after: String): FileConnection!
 }
 ```
 
@@ -837,7 +1023,7 @@ extend type Query {
 
 <div class="bad text-sm">⚠️ <code>after</code>/<code>first</code> with a cursor is stable under concurrent inserts/deletes; <code>offset</code> is not.</div>
 
-<CopyCommand demo="schema" label="Terminal demo: broken offset pagination → fixed cursor pagination" />
+<CopyCommand demo="schema" label="Demo: broken offset pagination -> cursor pagination" />
 
 <div class="lab-steps compact">
 Change <code>files(first: 2)</code> to <code>files(first: 3)</code> in <code>examples/04-schema-design.js</code> and inspect <code>pageInfo</code>.
@@ -853,9 +1039,9 @@ Change <code>files(first: 2)</code> to <code>files(first: 3)</code> in <code>exa
 Return a **wrapper**, never the bare type — so you can add fields later without a breaking change.
 
 ```graphql
-type CreatePostResponse {
-  value: Post          # null on failure
-  errors: [Error!]!
+type CreateFolderResponse {
+  value: File          # null on failure
+  errors: [CreateFolderError!]!
 }
 ```
 
@@ -865,17 +1051,15 @@ type CreatePostResponse {
 **Expected** failures are modeled as **data** (a typed union), not thrown into `errors[]`.
 
 ```graphql
-interface Error { code: String!  message: String! }
-
-type NameInUse   implements Error { code: String! message: String! }
-type NameTooLong implements Error { code: String! message: String! }
-
-union CreatePostError = NameInUse | NameTooLong
-
-type CreatePostResponse {
-  value: Post
-  errors: [CreatePostError!]!
+interface MutationError {
+  code: String!
+  message: String!
 }
+
+type NameInUse implements MutationError { ... }
+type NameTooLong implements MutationError { ... }
+
+union CreateFolderError = NameInUse | NameTooLong
 ```
 
 </div>
@@ -883,10 +1067,10 @@ type CreatePostResponse {
 
 <div class="muted text-sm">Client switches on <code>__typename</code> instead of string-matching messages. The transport <code>errors[]</code> stays for the <em>unexpected</em>.</div>
 
-<CopyCommand demo="errors" label="Terminal demo: null bubbling and typed errors-as-data" />
+<CopyCommand demo="errors" label="Demo: null bubbling -> typed errors-as-data" />
 
 <div class="lab-steps compact">
-Compare nullable <code>bio</code> failure with non-null <code>reputation</code> failure. Then change <code>createFolder("inbox")</code> to a new name.
+Compare the nullable <code>bio</code> failure with the non-null <code>reputation</code> failure. Then change <code>createFolder("inbox")</code> to a new name.
 </div>
 
 ---
@@ -910,39 +1094,45 @@ type Post {
   updatedAt: DateTime!
   modifiedAt: DateTime!
     @deprecated(reason:
-      "use `updatedAt` instead [2025-06-21]")
-
-  publicName: String
-    @deprecated(reason:
-      "use `name` instead [2025-01-05]")
+      "use updatedAt instead [2026-09-01]")
 }
 ```
 
 </div>
 </div>
 
-<div class="muted text-sm">A parallel <code>/v2</code> schema fragments the graph and doubles maintenance. Deprecate in place unless a truly incompatible platform split forces otherwise.</div>
+<div class="muted text-sm">A parallel <code>/v2</code> schema fragments the graph and doubles maintenance. Deprecate in place unless a truly incompatible platform split forces otherwise. <code>@deprecated</code> is shown to clients through introspection — try the <code>schema</code> demo.</div>
 
 ---
 layout: center
 class: text-center
 ---
 
-<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Review this schema</span></div>
+# Check your understanding <span style="font-size:0.7em">— Schema design</span>
+
+<div class="muted" style="margin-top:1rem">three live questions on nullability, pagination, and errors</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Nullability</span></div>
 
 <div style="max-width:48rem; margin:1rem auto; text-align:left">
 
 <Quiz
   qid="q4-nullability"
-  question="A backend sometimes returns null for a user's email. How should the field be typed?"
+  :multiline="true"
+  question="A field is typed reputation: Int! but the backend sometimes returns null for it. What happens when it does?"
   :options="[
-    'email: EmailAddress!  (non-null — email is conceptually required)',
-    'email: EmailAddress   (nullable custom scalar)',
-    'email: String         (nullable plain string)',
-    'email: String!        (non-null plain string)',
+    'The client receives reputation: null and renders fine',
+    'The server throws; the null propagates up and nulls the whole parent object',
+    'GraphQL coerces the null to 0 because Int has a default',
+    'The request fails with HTTP 400 and returns no data',
   ]"
   :answer="1"
-  explanation="Two rules combine: (1) nullability follows the <strong>backend guarantee</strong> — since it may return null it must be nullable, or the server throws and nulls the parent; (2) use the <strong>precise <code>EmailAddress</code></strong> scalar, not <code>String</code>."
+  explanation="A non-null field resolving to <code>null</code> is an execution error that <strong>propagates upward</strong>, nulling the nearest nullable parent — you lose the whole object, not just the field. Mark <code>!</code> only when the data truly cannot be null. (Status stays 200 — it is a field error.)"
 />
 
 </div>
@@ -958,15 +1148,41 @@ class: text-center
 
 <Quiz
   qid="q5-pagination"
-  question="Which pagination shape should a new query returning a list of files use?"
+  :multiline="true"
+  question="A user reads page 1 of an offset-paginated feed (limit/offset). Meanwhile 3 new items are inserted at the top. What do they see on page 2?"
   :options="[
-    'files(limit: Int, offset: Int): [File!]!',
-    'files(first: NonNegativeInt, after: String): FileConnection!',
-    'files(page: Int, perPage: Int): [File!]!',
-    'files: [File!]!',
+    'Nothing wrong — offset and cursor behave the same here',
+    'Items from the end of page 1 repeat on page 2, because offset counts positions that shifted',
+    'Page 2 fails to load with a cursor error',
+    'The 3 new items appear at the top of page 2',
   ]"
   :answer="1"
-  explanation="Use a cursor-based <strong>Connection</strong> with <code>first</code>/<code>after</code>. Offset/limit skips or duplicates rows under concurrent writes and is slow at depth; an unbounded list lets one client pull everything."
+  explanation="Offset addresses a <em>position</em> that moves when rows are inserted or deleted, so concurrent writes skip or duplicate rows. A <strong>cursor</strong> points at a stable item, so the next page is always after that item regardless of inserts — which is why cursor/Connection is the default."
+/>
+
+</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Errors as data</span></div>
+
+<div style="max-width:48rem; margin:1rem auto; text-align:left">
+
+<Quiz
+  qid="q6-errors-as-data"
+  :multiline="true"
+  question="createFolder can fail two ways: the name is already taken (the user can pick another), or the folder service is down. Where should each failure surface?"
+  :options="[
+    'Both in the top-level errors[] array',
+    'Both as typed-union data on the response',
+    'Name taken as typed-union data the UI handles; service down in the top-level errors[]',
+    'Name taken as HTTP 409; service down as HTTP 503',
+  ]"
+  :answer="2"
+  explanation="<strong>Expected, recoverable</strong> failures (name taken) become <strong>data</strong> via a typed union so the UI handles them with the type system. <strong>Unexpected</strong> failures (service down) belong in the top-level <code>errors[]</code>. Mixing them forces clients to string-match messages."
 />
 
 </div>
@@ -976,7 +1192,7 @@ layout: section
 ---
 
 # Production concerns
-<div class="muted">the gateway pattern, security, errors, subscriptions</div>
+<div class="muted">the gateway pattern, security, cost limiting, errors, subscriptions</div>
 
 ---
 
@@ -998,55 +1214,21 @@ The gateway is the right place to centralize:
 <div>
 
 ```mermaid {theme:'dark', scale:0.72}
-flowchart TB
+flowchart LR
   C1[web] --> G
   C2[mobile] --> G
   G["ONE schema<br/>/graphql"]
   G --> S1[users-svc]
   G --> S2[orders-svc]
   G --> S3[search-svc]
-  G --> S4[…]
 ```
 
 </div>
 </div>
 
 <div class="muted text-sm" style="margin-top:0.5rem">
-Clients hit <strong>one</strong> typed endpoint; the gateway fans out to many backends so each client team doesn't reinvent batching, auth, and error handling. Often the schema is assembled from per-domain modules (<strong>schema stitching</strong>) or independently-deployed subgraphs (<strong>federation</strong>).
+Many clients converge on <strong>one</strong> typed endpoint; the gateway fans out to many backends so each client team doesn't reinvent batching, auth, and error handling. The schema is machine-readable, so you can also <strong>generate</strong> resolver types server-side and operation types client-side (client section). Often assembled from per-domain modules (<strong>schema stitching</strong>) or independently-deployed subgraphs (<strong>federation</strong>).
 </div>
-
----
-
-# Codegen: types from the schema
-
-<div class="col-2">
-<div>
-
-The schema is machine-readable, so **generate** types instead of hand-writing them.
-
-- **Server** — generate **resolver types** so `(parent, args, context, info)` is fully typed against the schema.
-- **Client** — generate **typed operations** so `useQuery(DOC)` infers result + variable types.
-
-</div>
-<div>
-
-```ts
-// client: a typed document
-const GET_USER = graphql(`
-  query GetUser($id: ID!) {
-    user(id: $id) { id name }
-  }
-`)
-type Data = ResultOf<typeof GET_USER>      // inferred
-type Vars = VariablesOf<typeof GET_USER>   // inferred
-```
-
-<div class="muted text-sm">Tools: graphql-codegen, gql.tada, Relay. Re-run codegen whenever the schema changes.</div>
-
-</div>
-</div>
-
-<div class="bad text-sm">⚠️ Generated files are build output — never hand-edit them. Fix the schema and re-run codegen.</div>
 
 ---
 
@@ -1094,7 +1276,7 @@ Assign each field a cost, sum per operation, **reject** before execution if it e
 
 Don't count **requests** — charge each operation its **computed cost** against a per-user token bucket.
 
-A 5000-cost query correctly costs **1000×** a cheap one. A deny returns **HTTP 429** with `retryAfter`.
+In the demo, the **Normal** query costs **8** and passes; the **Wide** query (`4× expensiveReport` = cost **400**, 4 aliases) trips the `>30` cost / `>3` alias guard and is denied with **HTTP 429** + `retryAfter`.
 
 </div>
 <div>
@@ -1112,7 +1294,7 @@ if (!ok) throw new TooManyRequests({ retryAfter })
 
 <div class="muted text-sm">Apply the same cost checks to <strong>subscriptions</strong>, not just queries — a long-lived stream is expensive too.</div>
 
-<CopyCommand demo="production" label="Terminal demo: broken request counting → fixed cost guards" />
+<CopyCommand demo="production" label="Demo: broken request counting -> cost guards" />
 
 <div class="lab-steps compact">
 Lower the demo cost budget from <code>30</code> to <code>5</code>, rerun, and decide whether the normal query should still pass.
@@ -1120,7 +1302,7 @@ Lower the demo cost budget from <code>30</code> to <code>5</code>, rerun, and de
 
 ---
 
-# Errors & subscriptions
+# Error hygiene &amp; subscriptions
 
 <div class="col-2">
 <div>
@@ -1128,13 +1310,15 @@ Lower the demo cost budget from <code>30</code> to <code>5</code>, rerun, and de
 ### Error hygiene
 - **Mask** internal messages / stack traces in prod — don't leak topology.
 - Map backend status → a stable GraphQL **error code**.
-- Expected failures → **errors-as-data** (typed unions); unexpected → `errors[]`.
+- Keep the split from Schema design: **expected** failures are data; **unexpected** ones go in `errors[]`.
 
 </div>
 <div>
 
-### Subscriptions transport
-- **SSE** — one-way server→client, rides plain HTTP, simple to scale. Default for push.
+### Subscriptions
+A **subscription** is a long-lived **server→client** stream for events (e.g. `postAdded`); the client subscribes once and handles each pushed value (an operation, like a query or mutation). Transport:
+
+- **SSE** — one-way, rides plain HTTP, simple to scale. Default for push.
 - **WebSocket** — bidirectional but stateful, awkward behind HTTP load balancers.
 
 </div>
@@ -1147,21 +1331,31 @@ layout: center
 class: text-center
 ---
 
-<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Errors as data</span></div>
+# Check your understanding <span style="font-size:0.7em">— Production concerns</span>
+
+<div class="muted" style="margin-top:1rem">two live questions on the gateway and DoS defense</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Where to fix it</span></div>
 
 <div style="max-width:48rem; margin:1rem auto; text-align:left">
 
 <Quiz
-  qid="q6-errors-as-data"
-  question="A createFolder mutation can fail because the name is already in use — a normal outcome the UI should handle. How should you surface it?"
+  qid="q16-bff-gateway"
+  :multiline="true"
+  question="Web and mobile both reach users-svc and orders-svc through your GraphQL gateway. A new screen triggers an N+1 across orders. Where do you fix it so every client benefits at once?"
   :options="[
-    'Throw an error so it lands in the top-level errors[] array',
-    'Return it as data via a typed-union result (CreateFolderError = NameInUse | …)',
-    'Return null and let the client infer the failure',
-    'Return HTTP 409 from the GraphQL endpoint',
+    'Separately in each client, query by query',
+    'In the gateway — add a DataLoader at the resolver layer, so all clients get the batched fetch',
+    'In orders-svc, by adding a caching column',
+    'Nowhere — N+1 is a client-side concern',
   ]"
   :answer="1"
-  explanation="Expected, recoverable failures are modeled as <strong>data</strong> via typed unions, so clients handle them with the type system. The top-level <code>errors[]</code> is for <em>unexpected</em>/transport failures and nulls the data path."
+  explanation="The gateway / <strong>BFF</strong> is the shared layer where batching (DataLoader), auth, error normalization, and cost limiting live once — every client inherits the fix. Patching per-client duplicates work and drifts."
 />
 
 </div>
@@ -1171,21 +1365,22 @@ layout: center
 class: text-center
 ---
 
-<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">DoS protection</span></div>
+<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">DoS defense</span></div>
 
 <div style="max-width:48rem; margin:1rem auto; text-align:left">
 
 <Quiz
   qid="q7-dos-depth"
-  question="Why is limiting only the maximum query DEPTH insufficient DoS protection?"
+  :multiline="true"
+  question="Your API rejects any query deeper than 5 levels. An attacker sends a depth-2 query that aliases one expensive search field 400 times, and the server falls over. What guard was missing?"
   :options="[
-    'Depth limiting is too expensive to compute',
-    'A shallow query with massive alias fan-out or one very expensive field can still overload the server',
-    'Depth limits break introspection',
-    'Clients can disable depth limiting from the request',
+    'A lower max-depth limit than 5',
+    'Cost/complexity analysis that prices the whole operation and rejects it before execution',
+    'Disabling introspection in production',
+    'A database index on the search table',
   ]"
   :answer="1"
-  explanation="Wide-but-shallow queries (large alias fan-out, or one field that triggers an expensive backend) stay under a depth cap yet cost a lot. You need <strong>complexity / cost analysis</strong> plus cost-based rate limiting."
+  explanation="A wide-but-shallow query stays under any depth cap yet does enormous work. You need <strong>cost analysis</strong> — sum per-field weights and reject over budget — plus cost-based rate limiting. Depth alone cannot see fan-out."
 />
 
 </div>
@@ -1232,22 +1427,14 @@ const client = new ApolloClient({
 
 ---
 
-# Client codegen: typed operations
+# Codegen: typed operations
 
 <div class="col-2">
 <div>
 
-Hand-written `Data`/`Variables` types **drift** from the schema. Codegen reads the schema (via introspection) and makes every operation **type-safe end to end** — variables, results, and fragment composition.
+Hand-written `Data`/`Variables` types **drift** from the schema. Codegen reads the schema and types every operation **end to end** — `useQuery(GET_USER)` is fully typed, no casts.
 
-Three ecosystems:
-- **graphql-codegen** (client preset) — typed `graphql()`
-- **gql.tada** — types in the TS type-system, no generated file to import
-- **Relay** — compiler + artifacts
-
-</div>
-<div>
-
-```ts {all|1|2-3|5}
+```ts {all|1-5|6-7}
 const GET_USER = graphql(`
   query GetUser($id: ID!) {
     user(id: $id) { id name email }
@@ -1255,50 +1442,34 @@ const GET_USER = graphql(`
 `)
 type Data = ResultOf<typeof GET_USER>      // { user: { id; name; email } | null }
 type Vars = VariablesOf<typeof GET_USER>   // { id: string }
-
-useQuery(GET_USER, { variables: { id } }) // fully typed — no casts, no any
 ```
 
 </div>
+<div>
+
+<div class="card">
+
+**The pipeline**
+
+`schema` + your `graphql()` operations <br/>
+&nbsp;&nbsp;→ **codegen** <br/>
+&nbsp;&nbsp;→ generated types <br/>
+&nbsp;&nbsp;→ typed `useQuery` / `useMutation`
+
+<div class="muted text-sm" style="margin-top:0.5rem">Tools: graphql-codegen · gql.tada · Relay · regenerate on every schema change</div>
+
 </div>
 
-<div class="muted text-sm">Autocomplete on fields, a red squiggle the moment you request a field that doesn't exist. The schema is the source of truth.</div>
+</div>
+</div>
 
-<CopyCommand demo="client" label="Terminal demo: type drift → generated operation shape" />
+<div class="bad text-sm">⚠️ Generated files are build output — never hand-edit them. Fix the schema and re-run codegen.</div>
+
+<CopyCommand demo="client" label="Demo: type drift -> generated operation shape" />
 
 <div class="lab-steps compact">
-Look for the hand-written <code>fullName</code> type mismatch, then connect it to why generated operation types matter in review.
+Find the hand-written <code>fullName</code> mismatch — then connect it to why generated types matter in review.
 </div>
-
----
-
-# The codegen workflow
-
-```mermaid {theme:'dark', scale:0.66}
-flowchart LR
-  SC["schema<br/>(introspection URL<br/>or schema.graphql)"] --> CG["codegen<br/>/ ts-plugin"]
-  OP["your graphql()<br/>operations"] --> CG
-  CG --> T["generated types"]
-  T --> H["typed useQuery /<br/>useMutation"]
-```
-
-<div class="col-2" style="margin-top:0.5rem">
-<div class="card">
-
-1. point codegen at the **schema**
-2. write operations with `graphql()`
-3. run codegen → **generated types**
-4. hooks infer types automatically
-
-</div>
-<div class="card">
-
-**Regenerate whenever the schema changes** — a new field won't be typed until you do. A CI check can fail the build if an operation references a field the **published** schema doesn't have yet.
-
-</div>
-</div>
-
-<div class="muted text-sm" style="margin-top:0.4rem">This is exactly why the <strong>unreleased-field trap</strong> (a few slides on) bites — codegen only knows fields the published schema exposes.</div>
 
 ---
 
@@ -1326,7 +1497,7 @@ flowchart LR
 </div>
 
 <div class="muted text-sm" style="margin-top:0.8rem">
-Typical GraphQL clients use one POST endpoint, so browser/CDN URL caching is less useful than with REST. Client caches instead normalize the response graph into a flat store. A mutation that returns the changed entity auto-updates every view of it.
+A GraphQL client uses one POST endpoint, so browser/CDN URL caching is less useful than with REST. The client instead normalizes the response graph into a flat store. A mutation that returns the changed entity auto-updates every view of it.
 </div>
 
 <div class="card" style="margin-top:0.6rem">
@@ -1354,10 +1525,45 @@ new InMemoryCache({
 
 <div class="muted text-sm">The cache needs to know how to <strong>identify</strong> each entity (<code>keyFields</code>), how interfaces map to concrete types (<code>possibleTypes</code>), and how to <strong>merge</strong> paginated results.</div>
 
-<CopyCommand demo="client" label="Terminal demo: broken duplicate copies → fixed normalized cache" />
+<CopyCommand demo="client" label="Demo: duplicate copies -> normalized cache" />
 
 <div class="lab-steps compact">
 Remove <code>__typename</code> from the Feed query in <code>examples/06-client-cache.js</code> and rerun. Notice why identity is cache infrastructure.
+</div>
+
+---
+
+# Fragments: colocate &amp; compose
+
+<div class="col-2">
+<div>
+
+A **named fragment** is a reusable selection set. (You met the *inline* form `... on Type` back in interfaces — this is the named, reusable version.) Colocate it with the component that needs those fields.
+
+```graphql
+fragment PostCard on Post {
+  id
+  title
+  author { name }
+}
+```
+
+</div>
+<div>
+
+Compose fragments into queries by spreading them:
+
+```graphql
+query Feed {
+  posts {
+    edges { node { ...PostCard } }
+  }
+}
+```
+
+<div class="muted text-sm"><strong>Fragment masking</strong> (Relay / gql.tada) hides a fragment's fields from everyone except its owner — components only see what they declared. Great for encapsulation in large apps.</div>
+
+</div>
 </div>
 
 ---
@@ -1393,42 +1599,7 @@ const [search] = useLazyQuery(SEARCH)
 </div>
 </div>
 
-<div class="bad text-sm">⚠️ An omitted <code>fetchPolicy</code> silently means <code>cache-first</code> — set it explicitly so behavior is visible in review.</div>
-
----
-
-# Fragments: colocate & compose
-
-<div class="col-2">
-<div>
-
-A **fragment** is a reusable selection set. Colocate it with the component that needs those fields.
-
-```graphql
-fragment PostCard on Post {
-  id
-  title
-  author { name }
-}
-```
-
-</div>
-<div>
-
-Compose fragments into queries by spreading them:
-
-```graphql
-query Feed {
-  posts {
-    edges { node { ...PostCard } }
-  }
-}
-```
-
-<div class="muted text-sm"><strong>Fragment masking</strong> (Relay / gql.tada) hides a fragment's fields from everyone except its owner — components only see what they declared. Great for encapsulation in large apps.</div>
-
-</div>
-</div>
+<div class="bad text-sm">⚠️ An omitted <code>fetchPolicy</code> silently means <code>cache-first</code> — so a query can serve stale cached data without ever hitting the network. Set it explicitly so behavior is visible in review.</div>
 
 ---
 
@@ -1509,7 +1680,7 @@ useMutation(LIKE_POST, {
 
 ---
 
-# Loading, error & network states
+# Loading, error &amp; network states
 
 <div class="col-2">
 <div>
@@ -1569,35 +1740,16 @@ query {
 </div>
 </div>
 
+<div class="muted text-sm">This is the validation-before-execution rule from the lifecycle slide, biting in practice. Run the <code>client</code> demo — the <code>@include(if: false)</code> query still fails validation.</div>
+
+---
+layout: center
+class: text-center
 ---
 
-# Testing both halves
+# Check your understanding <span style="font-size:0.7em">— The client</span>
 
-<div class="col-2">
-<div>
-
-### Server
-- **unit** — pure resolver/loader logic
-- **integration** — run the **real schema** against mocked backends (no network)
-- **e2e** — real request through the running server
-
-</div>
-<div>
-
-### Client
-- mock the **operation** (request + result/error), render the hook/component, assert on what it returns.
-
-```ts
-mockedProvider({
-  request: { query: GET_USER, variables },
-  result: { data: { user: {…} } },
-})
-```
-
-</div>
-</div>
-
-<div class="muted text-sm">The highest-value server tier is the integration test: it exercises your resolver + loader through the <strong>actual</strong> schema with the network mocked — deterministic, and close to production behavior.</div>
+<div class="muted" style="margin-top:1rem">three live questions on caching, codegen, and the validation trap</div>
 
 ---
 layout: center
@@ -1611,15 +1763,40 @@ class: text-center
 <Quiz
   qid="q8-two-caches"
   :multiline="true"
-  question="Server: a query returns 50 posts, each Post.author needs a user. Client: those 50 users render in a list + a detail panel. Which distinguishes the two 'caches'?"
+  question="Two users hit your server at the same instant. Why is per-request DataLoader caching safe, but making that loader a module-level singleton shared across requests is not?"
   :options="[
-    'Both use DataLoader; the client just runs DataLoader in the browser',
-    'Server uses a per-request DataLoader that batches the 50 lookups into one call and is discarded after the request; the client cache normalizes the 50 users by __typename+id so list and detail share one cached entity',
-    'The server has no cache; only the client caches, keyed by the POST URL',
-    'Both caches persist across requests and users, which is why global IDs matter',
+    'Singletons are simply slower than per-request objects',
+    'A per-request loader is discarded after the response; a shared singleton would serve cached data from one request into another',
+    'DataLoader throws if it is reused on a second request',
+    'The client cache already does this, so the server should not cache at all',
   ]"
   :answer="1"
-  explanation="Server-side DataLoader = batching + dedupe within a <strong>single</strong> request, discarded after (per request → no cross-user leak). Client-side cache = a cross-component, cross-time normalized store keyed by <code>__typename+id</code>. Same word, different jobs."
+  explanation="Server DataLoader caching is scoped to <strong>one request</strong> and thrown away after — that is what makes it safe. A module-global cache would leak one request's data into another's. (The <em>client</em> normalized cache is the opposite: a deliberately cross-time store keyed by <code>__typename+id</code>.)"
+/>
+
+</div>
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-live">LIVE&nbsp;QUESTION</span><span class="q-title-text">Codegen</span></div>
+
+<div style="max-width:50rem; margin:0.6rem auto; text-align:left">
+
+<Quiz
+  qid="q11-codegen"
+  :multiline="true"
+  question="You add avatarUrl to the User type in the schema and select it in a component, but TypeScript says avatarUrl is not on the result type. What went wrong?"
+  :options="[
+    'You must hand-add avatarUrl to the generated types file',
+    'You did not re-run codegen, so the generated types do not know the new field yet',
+    'avatarUrl needs an @include directive before it can be typed',
+    'Apollo only types fields after the first runtime response',
+  ]"
+  :answer="1"
+  explanation="Generated types come from the schema + your operations at <strong>build time</strong>, so they are only as current as your last codegen run. Re-run codegen after a schema change, and never hand-edit the generated file — that drift is exactly what codegen prevents."
 />
 
 </div>
@@ -1636,15 +1813,15 @@ class: text-center
 <Quiz
   qid="q9-unreleased-field"
   :multiline="true"
-  question="You need a field the backend hasn't shipped yet. Adding it to the query and wrapping it in @include(if: $flag) fails with GRAPHQL_VALIDATION_FAILED. Why?"
+  question="You gate an unshipped field with riskScore @include(if: false), so it is never executed — yet the request still fails with GRAPHQL_VALIDATION_FAILED. Why?"
   :options="[
-    'The flag was false, so the field was stripped and the server got an empty selection',
-    'The server validates the ENTIRE document against its schema before execution — unknown fields are rejected regardless of @include/@skip',
-    '@include only works on fragments, not fields',
-    'The client cache rejected the field because it has no type policy',
+    'if: false produced an empty selection set, which is illegal',
+    'The whole document is validated against the schema BEFORE execution; @include/@skip only affect execution, so an unknown field is rejected anyway',
+    '@include works only on fragments, not on fields',
+    'The client cache rejected the field for having no type policy',
   ]"
   :answer="1"
-  explanation="Validation happens on the whole document <em>before</em> execution and ignores directive values. The fix: keep the sent document to released fields only, and widen the <strong>TypeScript type</strong> if you need to type-ahead — add the field for real once the schema ships."
+  explanation="Validation runs on the entire document up front and ignores directive values — <code>@include</code>/<code>@skip</code> apply later, during execution. So a field the schema lacks fails validation even when gated off. Fix: send only released fields, and widen the <strong>TypeScript type</strong> if you must type-ahead."
 />
 
 </div>
@@ -1653,7 +1830,32 @@ class: text-center
 layout: section
 ---
 
-# Recap & where to go next
+# Recap &amp; where to go next
+<div class="muted">the whole picture, your next steps, and the final quiz sprint</div>
+
+---
+layout: center
+---
+
+# The shape of a GraphQL system — full picture
+
+```mermaid {theme:'dark', scale:0.7}
+flowchart LR
+  U[User] --> C
+  subgraph C[Client]
+    H["useQuery /<br/>useMutation"] --> AC["GraphQL client<br/>+ normalized cache"]
+  end
+  AC -->|"POST /graphql"| S
+  subgraph S[GraphQL server]
+    R["resolvers"] --> L["DataLoaders"]
+  end
+  L --> DATA[("DB / REST /<br/>backends")]
+  DATA --> L --> R --> AC --> H --> U
+```
+
+<div class="muted text-sm" style="margin-top:0.5rem">
+The same picture from the start — now every label is yours. One typed endpoint in; the server resolves exactly the fields requested and returns that precise shape. It all connects.
+</div>
 
 ---
 
@@ -1721,16 +1923,25 @@ layout: center
 class: text-center
 ---
 
-# Bonus round
+# Bonus round <span style="font-size:0.8em">🏆</span>
 
-<div class="muted">a few more to tie it together — rack up points</div>
+<div class="muted">cross-cutting questions that span the whole talk — first answer counts, rack up points</div>
 
-<div style="max-width:50rem; margin:1.2rem auto; text-align:left">
+<!-- q10 is the always-run tiebreaker; run the rest as time allows, else straight to the leaderboard. -->
+
+---
+layout: center
+class: text-center
+---
+
+<div class="q-title"><span class="tag tag-bonus">BONUS</span><span class="q-title-text">429 vs partial response</span></div>
+
+<div style="max-width:50rem; margin:0.6rem auto; text-align:left">
 
 <Quiz
   qid="q10-429-vs-partial"
   :multiline="true"
-  question="A 5000-cost query gets HTTP 429 + retryAfter. A separate 50-item list returns HTTP 200 with most data + one entry in errors[]. Which explanation is correct?"
+  question="An over-budget query gets HTTP 429 + retryAfter. A separate 50-item list returns HTTP 200 with most data + one entry in errors[]. Which explanation is correct?"
   :options="[
     'Both should be 200; the 429 is a bug — GraphQL always returns 200',
     'The 429 is cost-based rate limiting (computed cost charged to a per-user token bucket; deny → 429 + retryAfter); the list is a normal 200 because one rejected loader key became a per-field error, leaving the rest of data intact',
@@ -1748,22 +1959,22 @@ layout: center
 class: text-center
 ---
 
-<div class="q-title"><span class="tag tag-live">BONUS</span><span class="q-title-text">Codegen</span></div>
+<div class="q-title"><span class="tag tag-bonus">BONUS</span><span class="q-title-text">Trace one field end to end</span></div>
 
 <div style="max-width:50rem; margin:0.6rem auto; text-align:left">
 
 <Quiz
-  qid="q11-codegen"
+  qid="q18-trace-synthesis"
   :multiline="true"
-  question="With codegen (graphql-codegen / gql.tada), where do a query's Data and Variables types come from?"
+  question="In one response, a non-null field resolves to null AND a sibling list has one failed entry. What HTTP status, and what does data look like?"
   :options="[
-    'You hand-write them next to each query and keep them in sync manually',
-    'They’re inferred from the typed document against the schema — e.g. ResultOf&lt;typeof DOC&gt; / VariablesOf&lt;typeof DOC&gt;',
-    'Apollo infers them at runtime from the first response',
-    'From the InMemoryCache typePolicies',
+    'HTTP 400 — the whole query is rejected',
+    'HTTP 500 — a resolver threw, so the request fails',
+    'Still HTTP 200 — the non-null null propagates up nulling its parent branch, while the sibling list keeps its good entries with one entry in errors[]',
+    'HTTP 200 with full data — errors[] never affects data',
   ]"
-  :answer="1"
-  explanation="Codegen reads the schema and types the operation, so result/variable types are <strong>derived from the document</strong> (<code>ResultOf</code>/<code>VariablesOf</code>). Re-run codegen when the schema changes; never hand-edit generated types."
+  :answer="2"
+  explanation="Field execution stays <strong>HTTP 200</strong>. A non-null field resolving to null throws and <strong>propagates up</strong>, nulling its nearest nullable parent (that branch of <code>data</code>). The sibling list survives with its good entries plus one <code>errors[]</code> entry — a <strong>partial response</strong>."
 />
 
 </div>
@@ -1773,47 +1984,22 @@ layout: center
 class: text-center
 ---
 
-<div class="q-title"><span class="tag tag-live">BONUS</span><span class="q-title-text">The normalized cache</span></div>
-
-<div style="max-width:50rem; margin:0.6rem auto; text-align:left">
-
-<Quiz
-  qid="q12-normalized-cache"
-  :multiline="true"
-  question="A list view and a detail view both show the same updated value right after one of them mutates an entity — no refetch. Why?"
-  :options="[
-    'The client refetches every query on every mutation',
-    'The normalized cache stores each entity once keyed by __typename + id, and both views read that single entry',
-    'HTTP caching on the /graphql URL keeps them in sync',
-    'The server pushes a subscription to both views',
-  ]"
-  :answer="1"
-  explanation="The client normalizes the response graph into a flat store keyed by <code>__typename</code> + <code>id</code>. Both views reference the same entity, so updating it once updates everywhere — no refetch."
-/>
-
-</div>
-
----
-layout: center
-class: text-center
----
-
-<div class="q-title"><span class="tag tag-live">BONUS</span><span class="q-title-text">Optimistic UI</span></div>
+<div class="q-title"><span class="tag tag-bonus">BONUS</span><span class="q-title-text">Optimistic UI</span></div>
 
 <div style="max-width:50rem; margin:0.6rem auto; text-align:left">
 
 <Quiz
   qid="q13-optimistic"
   :multiline="true"
-  question="What does an optimisticResponse on a mutation do?"
+  question="A like button writes an optimisticResponse, but the server rejects the mutation. What does the user see, and why must the optimistic object carry the same __typename + id?"
   :options="[
-    'Skips the server call entirely',
-    'Writes the expected result to the cache immediately for instant UI, then reconciles — or auto-reverts if the server errors',
-    'Retries the mutation until it succeeds',
-    'Disables the normalized cache for that mutation',
+    'The like sticks and you must undo it by hand; the id is optional',
+    'The like shows instantly then auto-reverts on error; __typename + id make it patch the SAME normalized entity every view shares',
+    'Nothing changes until the server responds; __typename + id are only for logging',
+    'The mutation retries automatically; __typename + id pick which retry wins',
   ]"
   :answer="1"
-  explanation="The optimistic result is written to the cache right away (instant UI), then replaced by the real server response — and rolled back automatically on error. Its <code>__typename</code>+<code>id</code> must match the real entity."
+  explanation="The optimistic result is written to the cache immediately (instant UI) and <strong>rolled back automatically</strong> if the server errors. It must match the real entity's <code>__typename + id</code> so it updates the one normalized record shared by the list, the detail panel, and every other view."
 />
 
 </div>
@@ -1823,22 +2009,22 @@ layout: center
 class: text-center
 ---
 
-<div class="q-title"><span class="tag tag-live">BONUS</span><span class="q-title-text">Fragments</span></div>
+<div class="q-title"><span class="tag tag-bonus">BONUS</span><span class="q-title-text">Fragments</span></div>
 
 <div style="max-width:50rem; margin:0.6rem auto; text-align:left">
 
 <Quiz
   qid="q14-fragment-masking"
   :multiline="true"
-  question="What problem does fragment masking (Relay / gql.tada) solve?"
+  question="Component A declares a PostCard fragment with title and author. Component B happens to fetch post.body in the same query. Without fragment masking, what bug becomes possible?"
   :options="[
-    'It compresses the query string sent over the wire',
-    'A component can read only the fields it declared in its own fragment — not fields a sibling or parent happened to fetch',
-    'It lets you skip server-side validation',
-    'It merges paginated pages in the cache',
+    'The query sends body twice over the wire',
+    'Component A starts reading post.body it never declared — then breaks later when B stops fetching body',
+    'The cache refuses to store posts that carry extra fields',
+    'Fragments A and B silently merge into one fragment',
   ]"
   :answer="1"
-  explanation="Masking enforces encapsulation: each component sees only its own fragment's fields, so you can't accidentally depend on data another component fetched. You read a masked fragment via a helper (e.g. <code>useFragment</code> / <code>readFragment</code>)."
+  explanation="Without masking, a component sees whatever fields landed in the response, so A can accidentally depend on <code>body</code> that B fetched. <strong>Masking</strong> hides fields outside a component's own fragment, so you can only read what you declared — via a helper like <code>useFragment</code>."
 />
 
 </div>
@@ -1865,3 +2051,71 @@ class: text-center
 GraphQL: ask for what you need, get exactly that. <br/>
 The server does the hard parts — now go ship.
 </div>
+
+---
+layout: section
+---
+
+# Appendix
+<div class="muted">backup slides — pull up only if a question demands depth</div>
+
+---
+
+# Two patterns that keep loaders sane
+
+<div class="col-2">
+<div>
+
+### Stable keys
+The batch function must return results **in the same order** as the keys it received — map keys → results explicitly.
+
+```ts
+return ids.map(id => byId[id] ?? null)
+```
+
+</div>
+<div>
+
+### Resilient batches
+Use `Promise.allSettled` so **one** failed key doesn't fail the whole list — return an error value for that key only (a **partial response**).
+
+```ts
+const settled = await Promise.allSettled(
+  keys.map(k => fetchOne(k)),
+)
+```
+
+</div>
+</div>
+
+<div class="muted text-sm">In a gateway over many backends, partial responses are essential: a 200 with most of <code>data</code> + one entry in <code>errors[]</code> beats failing the entire query.</div>
+
+---
+
+# Testing both halves
+
+<div class="col-2">
+<div>
+
+### Server
+- **unit** — pure resolver/loader logic
+- **integration** — run the **real schema** against mocked backends (no network)
+- **e2e** — real request through the running server
+
+</div>
+<div>
+
+### Client
+- mock the **operation** (request + result/error), render the hook/component, assert on what it returns.
+
+```ts
+mockedProvider({
+  request: { query: GET_USER, variables },
+  result: { data: { user: {…} } },
+})
+```
+
+</div>
+</div>
+
+<div class="muted text-sm">The highest-value server tier is the integration test: it exercises your resolver + loader through the <strong>actual</strong> schema with the network mocked — deterministic, and close to production behavior.</div>

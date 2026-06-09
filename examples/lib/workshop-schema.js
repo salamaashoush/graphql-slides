@@ -197,6 +197,11 @@ function attachUserFields(user) {
   }
 }
 
+// Maps to the slide "Resolvers compose into a tree". buildSchema + rootValue has no
+// resolver-map, so field logic is attached as closures on the returned object: the post
+// itself is the slide's `parent`, and graphql-js calls each field closure as
+// (args, context, info) — i.e. (_args, ctx) here is (args, context) from the slide's
+// (parent, args, context, info). `post` captured in scope is the `parent`.
 function attachPostFields(post) {
   if (!post) return null
   return {

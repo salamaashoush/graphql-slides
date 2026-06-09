@@ -7,10 +7,11 @@ These examples support the workshop. They are intentionally small, in-memory, an
 From a parent folder, or from inside an existing clone:
 
 ```sh
-if [ -d graphql-slides/.git ]; then cd graphql-slides; elif [ -f package.json ] && grep -q '"graphql-slides"' package.json; then :; else git clone https://github.com/salamaashoush/graphql-slides.git graphql-slides && cd graphql-slides; fi
-npm ci
-npm run examples -- list
+git clone https://github.com/salamaashoush/graphql-slides.git
+cd graphql-slides && npm ci && npm run examples -- list
 ```
+
+Already cloned? Run the second line from inside the repo.
 
 Run every demo:
 
@@ -38,10 +39,12 @@ npm run examples -- inspect dataloader
 | 5 min | Setup and list demos | `npm run examples -- list` |
 | 10 min | Query shape, validation, polymorphism | `npm run examples -- shape` |
 | 12 min | Resolvers and N+1 | `npm run examples -- dataloader` |
-| 12 min | Nullability and errors-as-data | `npm run examples -- errors` |
-| 10 min | Schema design: pagination/deprecation | `npm run examples -- schema` |
+| 8 min | Schema design: cursor pagination/deprecation | `npm run examples -- schema` |
+| 8 min | Nullability and errors-as-data | `npm run examples -- errors` |
 | 10 min | Production guards | `npm run examples -- production` |
 | 15 min | Client cache, codegen, unreleased fields | `npm run examples -- client` |
+
+The Schema design section presents pagination (`schema`) before errors-as-data (`errors`), matching the slide order.
 
 Use `npm run examples -- inspect <demo>` before a lab to see the file to edit and suggested changes.
 
@@ -51,7 +54,7 @@ Use `npm run examples -- inspect <demo>` before a lab to see the file to edit an
 | --- | --- |
 | Query shape, variables, aliases, fragments, interfaces, unions, validation | `npm run examples -- shape` |
 | Partial `data` + `errors`, nullability bubbling, errors-as-data | `npm run examples -- errors` |
-| Resolver tree, `parent/args/context`, N+1, per-request DataLoader | `npm run examples -- dataloader` |
+| Resolver tree (parent reached via closure; context explicit), N+1, per-request DataLoader | `npm run examples -- dataloader` |
 | Cursor pagination, deprecation, introspection | `npm run examples -- schema` |
 | Depth/alias/cost guards, 429-style rejection before execution | `npm run examples -- production` |
 | Normalized cache, fetch-policy thinking, optimistic update, unreleased-field trap | `npm run examples -- client` |

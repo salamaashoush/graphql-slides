@@ -4,18 +4,31 @@ import { computed, ref } from 'vue'
 interface Props {
   demo: string
   label?: string
+  setup?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   label: 'Run this example',
+  setup: false,
 })
 
 const copied = ref(false)
 
+const setupCommands = [
+  'git clone https://github.com/salamaashoush/graphql-slides.git',
+  'cd graphql-slides && npm ci && npm run examples -- list',
+]
+
+const demoCommand = computed(() => `npm run examples -- ${props.demo}`)
+
+const displayCommands = computed(() => (
+  props.setup ? setupCommands : [demoCommand.value]
+))
+
 const command = computed(() => [
-  'if [ -d graphql-slides/.git ]; then cd graphql-slides; elif [ -f package.json ] && grep -q \'"graphql-slides"\' package.json; then :; else git clone https://github.com/salamaashoush/graphql-slides.git graphql-slides && cd graphql-slides; fi',
-  'test -d node_modules || npm ci',
-  `npm run examples -- ${props.demo}`,
+  ...(props.setup
+    ? setupCommands
+    : [demoCommand.value]),
 ].join(' && '))
 
 async function copy() {
@@ -35,13 +48,15 @@ async function copy() {
   <div class="copy-command">
     <div class="copy-command__label">{{ label }}</div>
     <div class="copy-command__row">
-      <code class="copy-command__code">{{ command }}</code>
+      <div class="copy-command__code">
+        <code v-for="line in displayCommands" :key="line">{{ line }}</code>
+      </div>
       <button class="copy-command__button" type="button" @click="copy">
         {{ copied ? 'copied' : 'copy' }}
       </button>
     </div>
     <div class="copy-command__hint" aria-live="polite">
-      {{ copied ? 'Command copied to clipboard.' : 'Skips clone/install if already present.' }}
+      {{ copied ? 'Command copied to clipboard.' : setup ? 'Already cloned? Run the second line from inside the repo.' : 'Run from the repo root.' }}
     </div>
   </div>
 </template>
@@ -75,14 +90,24 @@ async function copy() {
 .copy-command__code {
   display: block;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   border: 1px solid var(--tn-bg3);
   border-radius: 0.45rem;
   background: var(--tn-bg2);
   color: var(--tn-fg);
   padding: 0.45rem 0.6rem;
   font-size: 0.62rem;
+}
+.copy-command__code code {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+}
+.copy-command__code code + code {
+  margin-top: 0.25rem;
 }
 .copy-command__button {
   border: 1px solid var(--tn-blue);
